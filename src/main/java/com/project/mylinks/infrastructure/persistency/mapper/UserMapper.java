@@ -1,5 +1,6 @@
 package com.project.mylinks.infrastructure.persistency.mapper;
 
+import com.project.mylinks.api.dto.linksDTO.LinksResponseDTO;
 import com.project.mylinks.api.dto.userDTO.CreateUserDTO;
 import com.project.mylinks.api.dto.userDTO.UserResponseDTO;
 import com.project.mylinks.domain.model.Links;
@@ -64,10 +65,16 @@ public final class UserMapper {
 
     public static UserResponseDTO toResponse(User model) {
         if (model == null) return null;
+
+        List<LinksResponseDTO> linksDto = model.getLinks().stream()
+                .map(LinksMapper::toResponse)
+                .collect(Collectors.toList());
+
         return new UserResponseDTO(
                 model.getId(),
                 model.getUsername(),
-                model.getEmail()
+                model.getEmail(),
+                linksDto
         );
     }
 }
