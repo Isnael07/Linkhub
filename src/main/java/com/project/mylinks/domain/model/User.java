@@ -9,7 +9,7 @@ public class User {
     private String username;
     private String password;
     private String email;
-    private List<Links> links; // 👈 relação 1:N (um usuário tem vários links)
+    private List<Links> links;
 
     public User(UUID id, String username, String password, String email, List<Links> links) {
         this.id = id;
