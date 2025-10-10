@@ -9,7 +9,6 @@ import com.project.mylinks.domain.model.Links;
 import com.project.mylinks.domain.model.User;
 import com.project.mylinks.domain.repository.GenericRepository;
 import com.project.mylinks.infrastructure.persistency.mapper.LinksMapper;
-import com.project.mylinks.infrastructure.persistency.mapper.UserMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
