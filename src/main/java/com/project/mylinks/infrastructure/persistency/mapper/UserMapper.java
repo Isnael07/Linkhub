@@ -8,7 +8,6 @@ import com.project.mylinks.domain.model.User;
 import com.project.mylinks.infrastructure.entity.UserEntity;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public final class UserMapper {
 
@@ -28,7 +27,7 @@ public final class UserMapper {
             entity.setLinks(
                     model.getLinks().stream()
                             .map(LinksMapper::toEntity)
-                            .collect(Collectors.toList())
+                            .toList()
             );
         }
 
@@ -42,7 +41,7 @@ public final class UserMapper {
         if (entity.getLinks() != null) {
             links = entity.getLinks().stream()
                     .map(LinksMapper::toModel)
-                    .collect(Collectors.toList());
+                    .toList();
         }
 
         return new User(
@@ -66,9 +65,11 @@ public final class UserMapper {
     public static UserResponseDTO toResponse(User model) {
         if (model == null) return null;
 
-        List<LinksResponseDTO> linksDto = model.getLinks().stream()
+        List<LinksResponseDTO> linksDto = (model.getLinks() == null)
+                ? List.of()
+                : model.getLinks().stream()
                 .map(LinksMapper::toResponse)
-                .collect(Collectors.toList());
+                .toList();
 
         return new UserResponseDTO(
                 model.getId(),
