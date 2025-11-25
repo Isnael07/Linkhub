@@ -3,79 +3,44 @@ package com.project.mylinks.infrastructure.persistency.mapper;
 import com.project.mylinks.api.dto.linksDTO.LinksResponseDTO;
 import com.project.mylinks.api.dto.userDTO.CreateUserDTO;
 import com.project.mylinks.api.dto.userDTO.UserResponseDTO;
-import com.project.mylinks.domain.model.Links;
 import com.project.mylinks.domain.model.User;
-import com.project.mylinks.infrastructure.entity.UserEntity;
+import com.project.mylinks.domain.model.UserRole;
+
 
 import java.util.List;
 
-public final class UserMapper {
+public class UserMapper {
 
-    private UserMapper() {}
-
-    public static UserEntity toEntity(User model) {
-        if (model == null) return null;
-
-        UserEntity entity = UserEntity.builder()
-                .id(model.getId())
-                .username(model.getUsername())
-                .email(model.getEmail())
-                .password(model.getPassword())
-                .build();
-
-        if (model.getLinks() != null) {
-            entity.setLinks(
-                    model.getLinks().stream()
-                            .map(LinksMapper::toEntity)
-                            .toList()
-            );
-        }
-
-        return entity;
+    private UserMapper() {
     }
 
-    public static User toModel(UserEntity entity) {
-        if (entity == null) return null;
+    public static User toEntity(CreateUserDTO dto) {
+        if (dto == null) return null;
 
-        List<Links> links = null;
-        if (entity.getLinks() != null) {
-            links = entity.getLinks().stream()
-                    .map(LinksMapper::toModel)
+        return User.builder()
+                .username(dto.username())
+                .email(dto.email())
+                .password(dto.password())
+                .role(UserRole.USER)
+                .build();
+    }
+
+    public static UserResponseDTO toResponse(User user) {
+        if (user == null) return null;
+
+        List<LinksResponseDTO> linksDTOs = null;
+        if (user.getLinks() != null) {
+            linksDTOs = user.getLinks().stream()
+                    .map(LinksMapper::toResponse)
                     .toList();
         }
 
-        return new User(
-                entity.getId(),
-                entity.getUsername(),
-                entity.getPassword(),
-                entity.getEmail(),
-                links
-        );
-    }
-
-    public static User toDomain(CreateUserDTO dto) {
-        if (dto == null) return null;
-        return new User(
-                dto.username(),
-                dto.password(),
-                dto.email()
-        );
-    }
-
-    public static UserResponseDTO toResponse(User model) {
-        if (model == null) return null;
-
-        List<LinksResponseDTO> linksDto = (model.getLinks() == null)
-                ? List.of()
-                : model.getLinks().stream()
-                .map(LinksMapper::toResponse)
-                .toList();
-
         return new UserResponseDTO(
-                model.getId(),
-                model.getUsername(),
-                model.getEmail(),
-                linksDto
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                linksDTOs
         );
     }
+
 }

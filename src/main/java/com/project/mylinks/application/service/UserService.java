@@ -5,45 +5,46 @@ import com.project.mylinks.api.dto.userDTO.UserResponseDTO;
 import com.project.mylinks.api.dto.userDTO.UserUpdateDTO;
 import com.project.mylinks.application.exception.UserNotFoundExeception;
 import com.project.mylinks.domain.model.User;
-import com.project.mylinks.infrastructure.entity.UserEntity;
 import com.project.mylinks.infrastructure.persistency.jpa.UserRepositoryJpa;
+import com.project.mylinks.infrastructure.persistency.mapper.UserMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 import java.util.UUID;
 
-import static com.project.mylinks.infrastructure.persistency.mapper.UserMapper.*;
+import static com.project.mylinks.infrastructure.persistency.mapper.UserMapper.toEntity;
+import static com.project.mylinks.infrastructure.persistency.mapper.UserMapper.toResponse;
 
 @Service
 public class UserService {
 
     private final UserRepositoryJpa repository;
 
+
     public UserService(UserRepositoryJpa repository) {
         this.repository = repository;
+
     }
 
     public UserResponseDTO create(CreateUserDTO dto) {
-
-        User domain = toDomain(dto);
-
-        UserEntity entity = toEntity(domain);
-
-        UserEntity saved = repository.save(entity);
-        return toResponse(toModel(saved));
+        User user = toEntity(dto);
+        repository.save(user);
+        return toResponse(user);
     }
 
+    @Transactional(readOnly = true)
     public Page<UserResponseDTO> findAll(Pageable pageable) {
         return repository.findAll(pageable)
-                .map(entity -> toResponse(toModel(entity)));
+                .map(UserMapper::toResponse);
     }
 
+    @Transactional(readOnly = true)
     public UserResponseDTO findById(UUID id) {
-        UserEntity entity = repository.findById(id)
+        User user = repository.findById(id)
                 .orElseThrow(UserNotFoundExeception::new);
-        return toResponse(toModel(entity));
+        return toResponse(user);
     }
 
     public void delete(UUID id) {
@@ -53,16 +54,14 @@ public class UserService {
         repository.deleteById(id);
     }
 
-
     public UserResponseDTO update(UUID id, UserUpdateDTO dto) {
-        UserEntity entity = repository.findById(id)
+        User user = repository.findById(id)
                 .orElseThrow(UserNotFoundExeception::new);
 
-        Optional.ofNullable(dto.username()).ifPresent(entity::setUsername);
-        Optional.ofNullable(dto.password()).ifPresent(entity::setPassword);
+        if (dto.username() != null) user.setUsername(dto.username());
+        if (dto.password() != null) user.setPassword(dto.password());
 
-
-        UserEntity updated = repository.save(entity);
-        return toResponse(toModel(updated));
+        repository.save(user);
+        return toResponse(user);
     }
 }

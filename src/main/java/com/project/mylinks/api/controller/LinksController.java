@@ -1,6 +1,5 @@
 package com.project.mylinks.api.controller;
 
-
 import com.project.mylinks.api.dto.linksDTO.CreateLinksDTO;
 import com.project.mylinks.api.dto.linksDTO.LinksResponseDTO;
 import com.project.mylinks.api.dto.linksDTO.LinksUpdateDTO;
@@ -10,6 +9,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/links")
@@ -32,17 +33,17 @@ public class LinksController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<LinksResponseDTO> findById(@PathVariable Long id) {
+    public ResponseEntity<LinksResponseDTO> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(this.service.findById(id));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<LinksResponseDTO> update(@PathVariable Long id,
+    public ResponseEntity<LinksResponseDTO> update(@PathVariable UUID id,
                                                    @RequestBody @Valid LinksUpdateDTO dto) {
         return ResponseEntity.ok(this.service.update(id, dto));
     }
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id){
+    public ResponseEntity<Void> deleteById(@PathVariable UUID id){
         this.service.delete(id);
         return ResponseEntity.noContent().build();
     }
