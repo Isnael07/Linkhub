@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -50,6 +51,7 @@ public class AuthController {
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("mybackend")
                 .subject(user.get().getId().toString())
+                .claim("roles", List.of("ROLE_" + user.get().getRole().name()))
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(expiresIn))
                 .build();
