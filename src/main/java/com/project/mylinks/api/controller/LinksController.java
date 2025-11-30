@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -22,30 +23,34 @@ public class LinksController {
         this.service = service;
     }
 
+    @PreAuthorize("isAuthenticated()")
     @PostMapping
     public ResponseEntity<LinksResponseDTO> create(@RequestBody @Valid CreateLinksDTO dto) {
         return ResponseEntity.ok(this.service.create(dto));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<Page<LinksResponseDTO>> findAll(Pageable pageable) {
         return ResponseEntity.ok(this.service.findAll(pageable));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public ResponseEntity<LinksResponseDTO> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(this.service.findById(id));
     }
 
+    @PreAuthorize("@linksService.findOwnerId(#id).toString() == authentication.principal or hasRole('ADMIN')")
     @PatchMapping("/{id}")
     public ResponseEntity<LinksResponseDTO> update(@PathVariable UUID id,
                                                    @RequestBody @Valid LinksUpdateDTO dto) {
         return ResponseEntity.ok(this.service.update(id, dto));
     }
+    @PreAuthorize("@linksService.findOwnerId(#id).toString() == authentication.principal or hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable UUID id){
         this.service.delete(id);
         return ResponseEntity.noContent().build();
     }
-
 }
