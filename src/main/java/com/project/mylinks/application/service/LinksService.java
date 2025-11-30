@@ -72,4 +72,12 @@ public class LinksService {
         }
         linksRepository.deleteById(id);
     }
+
+    public UUID findOwnerId(UUID id){
+        return linksRepository.findById(id)
+                .map(links -> links.getUser().getId())
+                .orElseThrow(()-> new IllegalArgumentException("Link not found")
+        );
+    }
+    
 }
