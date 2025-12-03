@@ -1,76 +1,40 @@
 package com.project.mylinks.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
+import lombok.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import java.util.List;
 import java.util.UUID;
 
-public class User {
 
+@Entity
+@Table(name = "users")
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Getter
+@Setter
+@Data
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "user_id")
     private UUID id;
     private String username;
     private String password;
     private String email;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Links> links;
 
-    public User(UUID id, String username, String password, String email, List<Links> links) {
-        this.id = id;
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.links = links;
-    }
+    @Enumerated(EnumType.STRING)
+    @Column(name = "cargo", nullable = false)
+    private UserRole role;
 
-    public User(String username, String password, String email, List<Links> links) {
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.links = links;
-    }
-
-    public User(UUID id, String username, String password, String email) {
-        this(id, username, password, email, null);
-    }
-
-    public User(String username, String password, String email) {
-        this(null, username, password, email, null);
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public List<Links> getLinks() {
-        return links;
-    }
-
-    public void setLinks(List<Links> links) {
-        this.links = links;
+    public boolean isLoginCorrect(String password, BCryptPasswordEncoder passwordEncoder) {
+        return passwordEncoder.matches(password, this.password);
     }
 }

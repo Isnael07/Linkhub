@@ -1,7 +1,9 @@
 package com.project.mylinks.api.dto.linksDTO;
 
+import java.util.UUID;
+
 public record LinksResponseDTO(
-        Long id,
+        UUID id,
         String nameUrl,
         String url
 ){}
