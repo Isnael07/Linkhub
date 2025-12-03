@@ -6,21 +6,22 @@ import com.project.mylinks.api.dto.linksDTO.LinksUpdateDTO;
 import com.project.mylinks.application.exception.LinksNotFoundException;
 import com.project.mylinks.application.exception.UserNotFoundExeception;
 import com.project.mylinks.domain.model.Links;
-import com.project.mylinks.infrastructure.entity.LinksEntity;
-import com.project.mylinks.infrastructure.entity.UserEntity;
+import com.project.mylinks.domain.model.User;
 import com.project.mylinks.infrastructure.persistency.jpa.LinksRepositoryJpa;
 import com.project.mylinks.infrastructure.persistency.jpa.UserRepositoryJpa;
 import com.project.mylinks.infrastructure.persistency.mapper.LinksMapper;
-import com.project.mylinks.infrastructure.persistency.mapper.UserMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import java.util.UUID;
 
-import static com.project.mylinks.infrastructure.persistency.mapper.LinksMapper.*;
+import static com.project.mylinks.infrastructure.persistency.mapper.LinksMapper.toEntity;
+import static com.project.mylinks.infrastructure.persistency.mapper.LinksMapper.toResponse;
 
 @Service
+@Transactional
 public class LinksService {
 
     private final LinksRepositoryJpa linksRepository;
@@ -31,52 +32,52 @@ public class LinksService {
         this.userRepository = userRepository;
     }
 
-
     public LinksResponseDTO create(CreateLinksDTO dto) {
-
-        UserEntity userEntity = userRepository.findById(dto.userId())
+        User user = userRepository.findById(dto.userId())
                 .orElseThrow(UserNotFoundExeception::new);
 
+        Links link = toEntity(dto, user);
+        linksRepository.save(link);
 
-        Links domain = toDomain(dto);
-
-        domain.setUser(UserMapper.toModel(userEntity));
-
-
-        LinksEntity entity = LinksMapper.toEntity(domain);
-
-
-        LinksEntity saved = linksRepository.save(entity);
-
-        return toResponse(toModel(saved));
+        return toResponse(link);
     }
 
-
+    @Transactional(readOnly = true)
     public Page<LinksResponseDTO> findAll(Pageable pageable) {
         return linksRepository.findAll(pageable)
-                .map(entity -> toResponse(toModel(entity)));
+                .map(LinksMapper::toResponse);
     }
 
-
-    public LinksResponseDTO findById(Long id) {
-        LinksEntity entity = linksRepository.findById(id)
+    @Transactional(readOnly = true)
+    public LinksResponseDTO findById(UUID id) {
+        Links link = linksRepository.findById(id)
                 .orElseThrow(LinksNotFoundException::new);
-        return toResponse(toModel(entity));
+        return toResponse(link);
     }
 
-
-    public LinksResponseDTO update(Long id, LinksUpdateDTO dto) {
-        LinksEntity entity = linksRepository.findById(id)
+    public LinksResponseDTO update(UUID id, LinksUpdateDTO dto) {
+        Links link = linksRepository.findById(id)
                 .orElseThrow(LinksNotFoundException::new);
 
-        Optional.ofNullable(dto.nameUrl()).ifPresent(entity::setNameUrl);
-        Optional.ofNullable(dto.url()).ifPresent(entity::setUrl);
+        if (dto.nameUrl() != null) link.setNameUrl(dto.nameUrl());
+        if (dto.url() != null) link.setUrl(dto.url());
 
-        LinksEntity updated = linksRepository.save(entity);
-        return toResponse(toModel(updated));
+        linksRepository.save(link);
+        return toResponse(link);
     }
 
-    public void delete(Long id) {
+    public void delete(UUID id) {
+        if (!linksRepository.existsById(id)) {
+            throw new RuntimeException("Link não encontrado");
+        }
         linksRepository.deleteById(id);
     }
+
+    public UUID findOwnerId(UUID id){
+        return linksRepository.findById(id)
+                .map(links -> links.getUser().getId())
+                .orElseThrow(()-> new IllegalArgumentException("Link not found")
+        );
+    }
+    
 }

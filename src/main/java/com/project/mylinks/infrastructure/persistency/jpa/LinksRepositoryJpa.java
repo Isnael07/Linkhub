@@ -1,7 +1,9 @@
 package com.project.mylinks.infrastructure.persistency.jpa;
 
-import com.project.mylinks.infrastructure.entity.LinksEntity;
+import com.project.mylinks.domain.model.Links;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface LinksRepositoryJpa extends JpaRepository<LinksEntity, Long> {
+import java.util.UUID;
+
+public interface LinksRepositoryJpa extends JpaRepository<Links, UUID> {
 }
