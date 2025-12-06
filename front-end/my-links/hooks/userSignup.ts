@@ -1,54 +1,70 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { signupSchema, SignupFormData } from "@/schemas/signupSchema";
 import { useRouter } from "next/navigation";
 
 export function useSignup() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const [form, setForm] = useState({
-    username: "",
-    email: "",
-    password: "",
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting }
+  } = useForm<SignupFormData>({
+    resolver: zodResolver(signupSchema),
   });
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
+  const onSubmit = async (data: SignupFormData) => {
     try {
       const response = await fetch("http://localhost:8080/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(data),
       });
 
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || "Erro ao criar conta");
+        let message = "Erro ao criar conta";
+
+        try {
+          const body = await response.clone().json();
+          if (body?.message) message = body.message;
+        } catch {
+          // ignore JSON parsing errors
+        }
+
+        throw new Error(message);
       }
+
+      setSuccess("Conta criada com sucesso!");
 
       router.push("/signin");
 
-    } catch (err: any) {
-      setError(err.message || "Erro inesperado");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError("root.serverError", {
+          type: "server",
+          message: err.message,
+        });
+      } else {
+        setError("root.serverError", {
+          type: "server",
+          message: "Erro inesperado.",
+        });
+      }
     }
-
-    setLoading(false);
-  }
+  };
 
   return {
-    form,
-    loading,
-    error,
-    handleChange,
+    register,
     handleSubmit,
+    errors,
+    isSubmitting,
+    success,
+    onSubmit,
   };
 }
