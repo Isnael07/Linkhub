@@ -9,9 +9,6 @@ export const linkSchema = z.object({
   url: z
     .string()
     .min(1, "A URL é obrigatória"),
-
-  userId: z
-    .uuid("ID do usuário inválido"),
 });
 
 export type LinkFormData = z.infer<typeof linkSchema>;
