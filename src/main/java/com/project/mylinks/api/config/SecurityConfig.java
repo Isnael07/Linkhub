@@ -40,7 +40,9 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> {})
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/login", "/signup").permitAll()
                         .requestMatchers(HttpMethod.DELETE,"/users/**").authenticated()
                         .anyRequest().authenticated()
@@ -57,10 +59,13 @@ public class SecurityConfig {
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter converter = new JwtGrantedAuthoritiesConverter();
         converter.setAuthoritiesClaimName("roles");
-        converter.setAuthorityPrefix(""); // roles já têm prefixo ROLE_
+        converter.setAuthorityPrefix("");
 
         JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
         jwtConverter.setJwtGrantedAuthoritiesConverter(converter);
+
+        jwtConverter.setPrincipalClaimName("sub");
+
         return jwtConverter;
     }
 
