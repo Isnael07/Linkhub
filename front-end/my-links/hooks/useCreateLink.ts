@@ -3,6 +3,13 @@
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { LinkFormData } from "@/schemas/linkSchema";
+import { jwtDecode } from "jwt-decode";
+
+type JwtPayload = {
+  sub: string;
+  exp: number;
+  roles?: string[];
+};
 
 export function useCreateLink() {
   const {
@@ -11,11 +18,10 @@ export function useCreateLink() {
     setError,
     reset,
     formState: { errors, isSubmitting }
-  } = useForm({
+  } = useForm<LinkFormData>({
     defaultValues: {
       nameUrl: "",
       url: "",
-      userId: ""
     }
   });
 
@@ -25,14 +31,28 @@ export function useCreateLink() {
     setSuccess("");
 
     try {
+      const token = localStorage.getItem("jwt");
+
+      console.log("JWT enviado:", token);
+
+      if (!token) {
+        throw new Error("Usuário não autenticado.");
+      }
+
+      const decoded = jwtDecode<JwtPayload>(token);
+      const userId = decoded.sub;
+
+      console.log("Payload enviado:", { ...data, userId });
+
       const res = await fetch("http://localhost:8080/links", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
           ...data,
-          userId: data.userId.trim()
+          userId,
         })
       });
 
@@ -44,18 +64,14 @@ export function useCreateLink() {
       setSuccess("Link cadastrado com sucesso!");
       reset();
 
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError("root.serverError", {
-          type: "server",
-          message: err.message,
-        });
-      } else {
-        setError("root.serverError", {
-          type: "server",
-          message: "Erro inesperado.",
-        });
-      }
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Erro inesperado.";
+
+      setError("root.serverError", {
+        type: "server",
+        message,
+      });
     }
   }
 

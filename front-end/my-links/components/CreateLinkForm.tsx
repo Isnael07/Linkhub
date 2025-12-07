@@ -46,20 +46,6 @@ export function CreateLinkForm() {
         )}
       </div>
 
-      {/* userId */}
-      <div className="space-y-1">
-        <Label htmlFor="userId">ID do Usuário</Label>
-        <Input
-          id="userId"
-          type="text"
-          placeholder="UUID do usuário"
-          {...register("userId")}
-        />
-        {errors.userId && (
-          <p className="text-red-500 text-sm">{errors.userId.message}</p>
-        )}
-      </div>
-
       {/* erro global */}
       {errors.root?.serverError?.message && (
         <p className="text-red-500 text-sm">
