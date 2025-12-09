@@ -1,4 +1,4 @@
-package com.project.mylinks.api.config;
+package com.project.mylinks.api.config.cors;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
