@@ -1,4 +1,4 @@
-package com.project.mylinks.api.config;
+package com.project.mylinks.api.config.security;
 
 
 import com.nimbusds.jose.jwk.JWK;
@@ -35,6 +35,7 @@ public class SecurityConfig {
     private RSAPrivateKey privateKey;
     @Value("${jwt.public.key}")
     private RSAPublicKey publicKey;
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

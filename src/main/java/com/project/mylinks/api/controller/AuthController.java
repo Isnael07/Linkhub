@@ -8,6 +8,7 @@ import com.project.mylinks.api.dto.userDTO.CreateUserDTO;
 import com.project.mylinks.domain.model.User;
 import com.project.mylinks.domain.model.UserRole;
 import com.project.mylinks.infrastructure.persistency.jpa.UserRepositoryJpa;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -40,8 +41,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO login) {
-        Optional<User> user = repository.findByUsername(login.username());
+    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO login) {
+        Optional<User> user = repository.findByEmail(login.email());
 
         if (user.isEmpty() || !user.get().isLoginCorrect(login.password(), passwordEncoder)) {
             throw new BadCredentialsException("user or password is invalid");
@@ -51,7 +52,7 @@ public class AuthController {
         long expiresIn = 300L;
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("mybackend")
+                .issuer("my-links-v0")
                 .subject(user.get().getId().toString())
                 .claim("roles", List.of("ROLE_" + user.get().getRole().name()))
                 .issuedAt(now)
@@ -65,7 +66,7 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<Void> signUp(@RequestBody CreateUserDTO dto){
-        if (repository.findByUsername(dto.username()).isPresent()) {
+        if (repository.findByEmail(dto.email()).isPresent()) {
             return ResponseEntity.badRequest().build();
         }
         User user = new User();

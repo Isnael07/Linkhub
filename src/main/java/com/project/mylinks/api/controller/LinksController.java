@@ -1,5 +1,8 @@
 package com.project.mylinks.api.controller;
 
+import com.project.mylinks.api.config.security.annotations.CanDeleteLink;
+import com.project.mylinks.api.config.security.annotations.canEditLink;
+import com.project.mylinks.api.config.security.annotations.CanViewLink;
 import com.project.mylinks.api.dto.linksDTO.CreateLinksDTO;
 import com.project.mylinks.api.dto.linksDTO.LinksResponseDTO;
 import com.project.mylinks.api.dto.linksDTO.LinksUpdateDTO;
@@ -11,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -30,28 +34,37 @@ public class LinksController {
         return ResponseEntity.ok(this.service.create(dto));
     }
 
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<Page<LinksResponseDTO>> findAll(Pageable pageable) {
         return ResponseEntity.ok(this.service.findAll(pageable));
     }
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
+    @CanViewLink
     public ResponseEntity<LinksResponseDTO> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(this.service.findById(id));
     }
 
-    @PreAuthorize("@linksService.findOwnerId(#id).toString() == authentication.principal or hasRole('ADMIN')")
+
     @PatchMapping("/{id}")
+    @canEditLink
     public ResponseEntity<LinksResponseDTO> update(@PathVariable UUID id,
                                                    @RequestBody @Valid LinksUpdateDTO dto) {
         return ResponseEntity.ok(this.service.update(id, dto));
     }
-    @PreAuthorize("@linksService.findOwnerId(#id).toString() == authentication.principal or hasRole('ADMIN')")
+
     @DeleteMapping("/{id}")
+    @CanDeleteLink
     public ResponseEntity<Void> deleteById(@PathVariable UUID id){
         this.service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/users/{id}/links")
+    @CanViewLink
+    public ResponseEntity<List<LinksResponseDTO>> findAllLinksByUser(@PathVariable UUID id){
+        List<LinksResponseDTO> links = service.findAllLinksByUserId(id);
+        return ResponseEntity.ok(links);
     }
 }

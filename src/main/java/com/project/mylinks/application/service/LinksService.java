@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 import static com.project.mylinks.infrastructure.persistency.mapper.LinksMapper.toEntity;
@@ -79,5 +80,10 @@ public class LinksService {
                 .orElseThrow(()-> new IllegalArgumentException("Link not found")
         );
     }
-    
+    public List<LinksResponseDTO> findAllLinksByUserId(UUID userId){
+      return linksRepository.findAllByUserId(userId)
+              .stream()
+              .map(LinksMapper::toResponse)
+              .toList();
+    }
 }
