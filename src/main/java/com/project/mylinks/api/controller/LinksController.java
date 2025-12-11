@@ -1,8 +1,6 @@
 package com.project.mylinks.api.controller;
 
-import com.project.mylinks.api.config.security.annotations.CanDeleteLink;
-import com.project.mylinks.api.config.security.annotations.canEditLink;
-import com.project.mylinks.api.config.security.annotations.CanViewLink;
+import com.project.mylinks.api.config.security.annotations.CanPermissionLink;
 import com.project.mylinks.api.dto.linksDTO.CreateLinksDTO;
 import com.project.mylinks.api.dto.linksDTO.LinksResponseDTO;
 import com.project.mylinks.api.dto.linksDTO.LinksUpdateDTO;
@@ -41,28 +39,27 @@ public class LinksController {
     }
 
     @GetMapping("/{id}")
-    @CanViewLink
     public ResponseEntity<LinksResponseDTO> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(this.service.findById(id));
     }
 
 
     @PatchMapping("/{id}")
-    @canEditLink
+    @CanPermissionLink
     public ResponseEntity<LinksResponseDTO> update(@PathVariable UUID id,
                                                    @RequestBody @Valid LinksUpdateDTO dto) {
         return ResponseEntity.ok(this.service.update(id, dto));
     }
 
     @DeleteMapping("/{id}")
-    @CanDeleteLink
+    @CanPermissionLink
     public ResponseEntity<Void> deleteById(@PathVariable UUID id){
         this.service.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/users/{id}/links")
-    @CanViewLink
+    @CanPermissionLink
     public ResponseEntity<List<LinksResponseDTO>> findAllLinksByUser(@PathVariable UUID id){
         List<LinksResponseDTO> links = service.findAllLinksByUserId(id);
         return ResponseEntity.ok(links);
