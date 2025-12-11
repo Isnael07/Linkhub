@@ -10,6 +10,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-@PreAuthorize("@permissionHandler.canEditLink(#id)")
-public @interface canEditLink {
+@PreAuthorize("@permissionHandler.canPermissionUser(#id)")
+public @interface CanPermissionUser {
 }
