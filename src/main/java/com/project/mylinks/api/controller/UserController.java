@@ -1,5 +1,6 @@
 package com.project.mylinks.api.controller;
 
+import com.project.mylinks.api.config.security.annotations.CanPermissionUser;
 import com.project.mylinks.api.dto.userDTO.CreateUserDTO;
 import com.project.mylinks.api.dto.userDTO.UserResponseDTO;
 import com.project.mylinks.api.dto.userDTO.UserUpdateDTO;
@@ -25,6 +26,7 @@ public class UserController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponseDTO> create(@RequestBody @Valid CreateUserDTO dto){
         return ResponseEntity.ok(this.service.create(dto));
     }
@@ -35,21 +37,22 @@ public class UserController {
     public ResponseEntity<Page<UserResponseDTO>> findALl(Pageable pageable){
         return ResponseEntity.ok(this.service.findAll(pageable));
     }
-    @PreAuthorize("hasRole('ADMIN')")
+
     @GetMapping("/{id}")
+    @CanPermissionUser
     public ResponseEntity<UserResponseDTO> findById(@PathVariable UUID id){
         return ResponseEntity.ok(this.service.findById(id));
     }
 
-    @PreAuthorize("#id.toString() == authentication.principal or hasRole('ADMIN')")
     @DeleteMapping("/{id}")
+    @CanPermissionUser
     public ResponseEntity<Void> delete(@PathVariable UUID id){
         this.service.delete(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("#id.toString() == authentication.name or hasRole('ADMIN')")
     @PatchMapping("/{id}")
+    @CanPermissionUser
     public ResponseEntity<UserResponseDTO> update(@PathVariable UUID id, @RequestBody UserUpdateDTO dto){
         return ResponseEntity.ok(this.service.update(id, dto));
     }

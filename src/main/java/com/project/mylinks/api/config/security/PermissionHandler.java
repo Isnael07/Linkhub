@@ -1,6 +1,6 @@
 package com.project.mylinks.api.config.security;
 
-import com.project.mylinks.application.service.AuthorizationService;
+import com.project.mylinks.application.service.LinksService;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -8,34 +8,28 @@ import java.util.UUID;
 @Component("permissionHandler")
 public class PermissionHandler {
 
-    private final AuthorizationService authorizationService;
+    private final LinksService linksService;
 
-    public PermissionHandler(AuthorizationService authorizationService) {
-        this.authorizationService = authorizationService;
+    public PermissionHandler(LinksService linksService) {
+        this.linksService = linksService;
     }
 
-    public boolean canDeleteLink(UUID id) {
-        return authorizationService.canDeleteLink(id);
+
+    public boolean canPermissionLinks(UUID linkId){
+        UUID userId = AuthUtil.getAuthenticatedUserId();
+        UUID ownerId = linksService.findOwnerId(linkId);
+
+        if (ownerId == null) return false;
+        if (ownerId.equals(userId)) return true;
+
+        return AuthUtil.hasRole("ADMIN");
     }
 
-    public boolean canEditLink(UUID id) {
-        return authorizationService.canEditLink(id);
-    }
+    public boolean canPermissionUser(UUID userId){
+        UUID id =  AuthUtil.getAuthenticatedUserId();
+        if(id.equals(userId)) return true;
 
-    public boolean canViewLink(UUID id) {
-        return authorizationService.canViewLink(id);
-    }
-
-    public boolean canViewUser(UUID id){
-        return false;
-    }
-
-    public boolean canDeleteUser(UUID id){
-        return false;
-    }
-
-    public boolean canEditUser(UUID id){
-        return false;
+        return AuthUtil.hasRole("ADMIN");
     }
 }
 
