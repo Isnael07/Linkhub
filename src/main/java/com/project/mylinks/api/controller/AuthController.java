@@ -1,83 +1,33 @@
 package com.project.mylinks.api.controller;
 
-
-import com.project.mylinks.api.dto.loginDTOs.LoginResponseDTO;
 import com.project.mylinks.api.dto.loginDTOs.LoginRequestDTO;
-
+import com.project.mylinks.api.dto.loginDTOs.LoginResponseDTO;
 import com.project.mylinks.api.dto.userDTO.CreateUserDTO;
-import com.project.mylinks.domain.model.User;
-import com.project.mylinks.domain.model.UserRole;
-import com.project.mylinks.infrastructure.persistency.jpa.UserRepositoryJpa;
-import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
+@Tag(name = "Auth", description = "Endpoints for authentication and registration")
+public interface AuthController {
 
+    @Operation(
+            summary = "Authenticate user",
+            description = "Authenticates a user using email/username and password and returns a JWT token."
+    )
+    @ApiResponse(responseCode = "200", description = "Authentication successful")
+    @ApiResponse(responseCode = "400", description = "Invalid login request")
+    @ApiResponse(responseCode = "401", description = "Invalid credentials")
 
-@CrossOrigin(origins = "http://localhost:3000")
-@RestController
-public class AuthController {
+    ResponseEntity<LoginResponseDTO> login(LoginRequestDTO login);
 
-    private final JwtEncoder jwtEncoder;
-    private final UserRepositoryJpa repository;
+    @Operation(
+            summary = "Register new user",
+            description = "Creates a new user account."
+    )
+    @ApiResponse(responseCode = "201", description = "User successfully registered")
+    @ApiResponse(responseCode = "400", description = "Invalid request data")
+    @ApiResponse(responseCode = "409", description = "User already exists")
 
-    private final BCryptPasswordEncoder passwordEncoder;
-
-    public AuthController(JwtEncoder jwtEncoder, UserRepositoryJpa repository, BCryptPasswordEncoder passwordEncoder) {
-        this.jwtEncoder = jwtEncoder;
-        this.repository = repository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO login) {
-        Optional<User> user = repository.findByEmail(login.email());
-
-        if (user.isEmpty() || !user.get().isLoginCorrect(login.password(), passwordEncoder)) {
-            throw new BadCredentialsException("user or password is invalid");
-        }
-
-        Instant now = Instant.now();
-        long expiresIn = 300L;
-
-        JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("my-links-v0")
-                .subject(user.get().getId().toString())
-                .claim("roles", List.of("ROLE_" + user.get().getRole().name()))
-                .issuedAt(now)
-                .expiresAt(now.plusSeconds(expiresIn))
-                .build();
-
-        String jwtValue = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-
-        return ResponseEntity.ok(new LoginResponseDTO(jwtValue, expiresIn));
-    }
-
-    @PostMapping("/signup")
-    public ResponseEntity<Void> signUp(@RequestBody CreateUserDTO dto){
-        if (repository.findByEmail(dto.email()).isPresent()) {
-            return ResponseEntity.badRequest().build();
-        }
-        User user = new User();
-        user.setUsername(dto.username());
-        user.setEmail(dto.email());
-        user.setPassword(passwordEncoder.encode(dto.password()));
-        user.setRole(UserRole.USER);
-
-        repository.save(user);
-
-        return ResponseEntity.ok().build();
-    }
+    ResponseEntity<Void> signUp(CreateUserDTO dto);
 }
-
