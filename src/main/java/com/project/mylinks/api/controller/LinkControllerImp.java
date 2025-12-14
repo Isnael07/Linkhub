@@ -18,23 +18,25 @@ import java.util.UUID;
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/links")
-public class LinksController {
+public class LinkControllerImp implements LinkController {
 
     private final LinksService service;
 
-    public LinksController(LinksService service) {
+    public LinkControllerImp(LinksService service) {
         this.service = service;
     }
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping
+    @Override
     public ResponseEntity<LinksResponseDTO> create(@RequestBody @Valid CreateLinksDTO dto) {
         return ResponseEntity.ok(this.service.create(dto));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ResponseEntity<Page<LinksResponseDTO>> findAll(Pageable pageable) {
+    @Override
+    public ResponseEntity<Page<LinksResponseDTO>> findALl(Pageable pageable) {
         return ResponseEntity.ok(this.service.findAll(pageable));
     }
 
@@ -46,6 +48,7 @@ public class LinksController {
 
     @PatchMapping("/{id}")
     @CanPermissionLink
+    @Override
     public ResponseEntity<LinksResponseDTO> update(@PathVariable UUID id,
                                                    @RequestBody @Valid LinksUpdateDTO dto) {
         return ResponseEntity.ok(this.service.update(id, dto));
@@ -53,6 +56,7 @@ public class LinksController {
 
     @DeleteMapping("/{id}")
     @CanPermissionLink
+    @Override
     public ResponseEntity<Void> deleteById(@PathVariable UUID id){
         this.service.delete(id);
         return ResponseEntity.noContent().build();
@@ -60,6 +64,7 @@ public class LinksController {
 
     @GetMapping("/users/{id}/links")
     @CanPermissionLink
+    @Override
     public ResponseEntity<List<LinksResponseDTO>> findAllLinksByUser(@PathVariable UUID id){
         List<LinksResponseDTO> links = service.findAllLinksByUserId(id);
         return ResponseEntity.ok(links);
