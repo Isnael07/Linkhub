@@ -14,9 +14,9 @@ public class OpenAPIConfig {
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Minha API")
+                        .title("MyLinks API")
                         .version("v1")
-                        .description("Documentação da API")
+                        .description("REST API for user authentication and link management")
                 )
                 .components(new Components()
                         .addSecuritySchemes("bearerAuth",
@@ -28,3 +28,4 @@ public class OpenAPIConfig {
                 );
     }
 }
+
