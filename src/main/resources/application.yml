@@ -23,3 +23,9 @@ jwt:
   public:
     key: classpath:app.pub
 
+springdoc:
+  swagger-ui:
+    path: /swagger
+  api-docs:
+    path: /api-docs
+

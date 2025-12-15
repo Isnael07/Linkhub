@@ -1,6 +1,7 @@
 package com.project.mylinks.api.controller;
 
 
+import com.project.mylinks.api.controller.docs.AuthController;
 import com.project.mylinks.api.dto.loginDTOs.LoginResponseDTO;
 import com.project.mylinks.api.dto.loginDTOs.LoginRequestDTO;
 
@@ -27,20 +28,21 @@ import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
-public class AuthController {
+public class AuthControllerImp implements AuthController {
 
     private final JwtEncoder jwtEncoder;
     private final UserRepositoryJpa repository;
 
     private final BCryptPasswordEncoder passwordEncoder;
 
-    public AuthController(JwtEncoder jwtEncoder, UserRepositoryJpa repository, BCryptPasswordEncoder passwordEncoder) {
+    public AuthControllerImp(JwtEncoder jwtEncoder, UserRepositoryJpa repository, BCryptPasswordEncoder passwordEncoder) {
         this.jwtEncoder = jwtEncoder;
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/login")
+    @Override
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO login) {
         Optional<User> user = repository.findByEmail(login.email());
 
@@ -65,6 +67,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
+    @Override
     public ResponseEntity<Void> signUp(@RequestBody CreateUserDTO dto){
         if (repository.findByEmail(dto.email()).isPresent()) {
             return ResponseEntity.badRequest().build();
