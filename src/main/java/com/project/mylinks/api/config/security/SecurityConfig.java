@@ -20,7 +20,6 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
-import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
 
 import java.security.interfaces.RSAPrivateKey;
@@ -96,27 +95,6 @@ public class SecurityConfig {
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder(){
         return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public BearerTokenResolver bearerTokenResolver() {
-        return request -> {
-            String path = request.getRequestURI();
-
-            // 🔥 Swagger e OpenAPI totalmente ignorados pelo JWT
-            if (path.startsWith("/v3/api-docs")
-                    || path.startsWith("/swagger-ui")) {
-                return null;
-            }
-
-            // comportamento padrão
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                return authHeader.substring(7);
-            }
-
-            return null;
-        };
     }
 
 }
