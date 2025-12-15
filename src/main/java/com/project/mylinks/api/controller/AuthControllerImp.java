@@ -1,6 +1,7 @@
 package com.project.mylinks.api.controller;
 
 
+import com.project.mylinks.api.controller.docs.AuthController;
 import com.project.mylinks.api.dto.loginDTOs.LoginResponseDTO;
 import com.project.mylinks.api.dto.loginDTOs.LoginRequestDTO;
 

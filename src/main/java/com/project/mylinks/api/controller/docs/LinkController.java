@@ -1,4 +1,4 @@
-package com.project.mylinks.api.controller;
+package com.project.mylinks.api.controller.docs;
 
 
 import com.project.mylinks.api.dto.linksDTO.CreateLinksDTO;

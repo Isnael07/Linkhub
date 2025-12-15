@@ -1,6 +1,7 @@
 package com.project.mylinks.api.controller;
 
 import com.project.mylinks.api.config.security.annotations.CanPermissionUser;
+import com.project.mylinks.api.controller.docs.UserController;
 import com.project.mylinks.api.dto.userDTO.CreateUserDTO;
 import com.project.mylinks.api.dto.userDTO.UserResponseDTO;
 import com.project.mylinks.api.dto.userDTO.UserUpdateDTO;
@@ -17,7 +18,7 @@ import java.util.UUID;
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/user")
-public class UserControllerImp implements UserController{
+public class UserControllerImp implements UserController {
 
     private final UserService service;
 

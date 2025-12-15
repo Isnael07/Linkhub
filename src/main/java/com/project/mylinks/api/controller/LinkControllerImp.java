@@ -1,6 +1,7 @@
 package com.project.mylinks.api.controller;
 
 import com.project.mylinks.api.config.security.annotations.CanPermissionLink;
+import com.project.mylinks.api.controller.docs.LinkController;
 import com.project.mylinks.api.dto.linksDTO.CreateLinksDTO;
 import com.project.mylinks.api.dto.linksDTO.LinksResponseDTO;
 import com.project.mylinks.api.dto.linksDTO.LinksUpdateDTO;
