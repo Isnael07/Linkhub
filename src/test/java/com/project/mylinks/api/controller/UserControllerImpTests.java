@@ -60,4 +60,23 @@ class UserControllerImpTests {
                 .andExpect(jsonPath("$.email").value("userteste@gmail.com"))
                 .andExpect(jsonPath("$.links").isArray());
     }
+
+    @Test
+    void shouldFindUserById() throws Exception {
+        UserResponseDTO response = new UserResponseDTO(
+                UUID.randomUUID(),
+                "userTest",
+                "userteste@gmail.com",
+                List.of()
+
+        );
+
+        Mockito.when(service.findById(response.id())).thenReturn(response);
+
+        mockMvc.perform(get("/user/{id}", response.id())
+                        .with(jwt().authorities()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(response.id().toString()))
+                .andExpect(jsonPath("$.username").value("userTest"));
+    }
 }
