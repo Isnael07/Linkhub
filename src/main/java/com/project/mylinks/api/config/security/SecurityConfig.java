@@ -49,7 +49,7 @@ public class SecurityConfig {
                                 "/login",
                                 "/signup"
                         ).permitAll()
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
                 )
 
                 .oauth2ResourceServer(oauth2 ->
