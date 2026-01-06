@@ -3,6 +3,7 @@ package com.project.mylinks.api.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.mylinks.api.dto.userDTO.CreateUserDTO;
 import com.project.mylinks.api.dto.userDTO.UserResponseDTO;
+import com.project.mylinks.api.dto.userDTO.UserUpdateDTO;
 import com.project.mylinks.application.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -134,8 +135,30 @@ class UserControllerImpTests {
                 .andExpect(jsonPath("$.content[1].username").value(dto2.username()))
                 .andExpect(jsonPath("$.content[1].email").value(dto2.email()))
                 .andExpect(jsonPath("$.content[1].links").isEmpty());
+    }
 
+    @Test
+    void shouldUpdateUser() throws Exception {
+        UUID id = UUID.randomUUID();
 
+        UserUpdateDTO update = new UserUpdateDTO("test", "223334");
 
+        UserResponseDTO response = new UserResponseDTO(
+                id,
+                update.username(),
+                "test@gamil.com",
+                List.of()
+        );
+
+        when(service.update(id,update)).thenReturn(response);
+
+        mockMvc.perform(patch("/user/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(update)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(response.id().toString()))
+                .andExpect(jsonPath("$.username").value(response.username()))
+                .andExpect(jsonPath("$.email").value(response.email()))
+                .andExpect(jsonPath("$.links").isEmpty());
     }
 }
