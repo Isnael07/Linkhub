@@ -74,12 +74,14 @@ public class LinksService {
         linksRepository.deleteById(id);
     }
 
+    @Transactional(readOnly = true)
     public UUID findOwnerId(UUID id){
         return linksRepository.findById(id)
                 .map(links -> links.getUser().getId())
                 .orElseThrow(()-> new IllegalArgumentException("Link not found")
         );
     }
+    @Transactional(readOnly = true)
     public List<LinksResponseDTO> findAllLinksByUserId(UUID userId){
       return linksRepository.findAllByUserId(userId)
               .stream()
