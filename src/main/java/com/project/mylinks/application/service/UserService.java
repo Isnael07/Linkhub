@@ -18,6 +18,7 @@ import static com.project.mylinks.infrastructure.persistency.mapper.UserMapper.t
 import static com.project.mylinks.infrastructure.persistency.mapper.UserMapper.toResponse;
 
 @Service
+@Transactional
 public class UserService {
 
     private final UserRepositoryJpa repository;
