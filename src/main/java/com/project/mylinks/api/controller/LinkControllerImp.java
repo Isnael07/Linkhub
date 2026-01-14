@@ -1,6 +1,7 @@
 package com.project.mylinks.api.controller;
 
 import com.project.mylinks.api.config.security.annotations.CanPermissionLink;
+import com.project.mylinks.api.config.security.annotations.CanPermissionLinksByUserId;
 import com.project.mylinks.api.controller.docs.LinkController;
 import com.project.mylinks.api.dto.linksDTO.CreateLinksDTO;
 import com.project.mylinks.api.dto.linksDTO.LinksResponseDTO;
@@ -27,7 +28,7 @@ public class LinkControllerImp implements LinkController {
         this.service = service;
     }
 
-    @PreAuthorize("isAuthenticated()")
+    @CanPermissionLinksByUserId
     @PostMapping
     @Override
     public ResponseEntity<LinksResponseDTO> create(@RequestBody @Valid CreateLinksDTO dto) {
