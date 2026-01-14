@@ -4,7 +4,7 @@ import com.project.mylinks.api.dto.linksDTO.CreateLinksDTO;
 import com.project.mylinks.api.dto.linksDTO.LinksResponseDTO;
 import com.project.mylinks.api.dto.linksDTO.LinksUpdateDTO;
 import com.project.mylinks.application.exception.LinksNotFoundException;
-import com.project.mylinks.application.exception.UserNotFoundExeception;
+import com.project.mylinks.application.exception.UserNotFoundException;
 import com.project.mylinks.domain.model.Links;
 import com.project.mylinks.domain.model.User;
 import com.project.mylinks.infrastructure.persistency.jpa.LinksRepositoryJpa;
@@ -35,7 +35,7 @@ public class LinksService {
 
     public LinksResponseDTO create(CreateLinksDTO dto) {
         User user = userRepository.findById(dto.userId())
-                .orElseThrow(UserNotFoundExeception::new);
+                .orElseThrow(UserNotFoundException::new);
 
         Links link = toEntity(dto, user);
         linksRepository.save(link);
@@ -69,7 +69,7 @@ public class LinksService {
 
     public void delete(UUID id) {
         if (!linksRepository.existsById(id)) {
-            throw new RuntimeException("Link não encontrado");
+            throw new LinksNotFoundException();
         }
         linksRepository.deleteById(id);
     }
@@ -78,12 +78,18 @@ public class LinksService {
     public UUID findOwnerId(UUID id){
         return linksRepository.findById(id)
                 .map(links -> links.getUser().getId())
-                .orElseThrow(()-> new IllegalArgumentException("Link not found")
+                .orElseThrow(UserNotFoundException::new
         );
     }
     @Transactional(readOnly = true)
     public List<LinksResponseDTO> findAllLinksByUserId(UUID userId){
-      return linksRepository.findAllByUserId(userId)
+        if(!userRepository.existsById(userId)) throw new UserNotFoundException();
+
+        List<Links> links = linksRepository.findAllByUserId(userId);
+
+        if(links.isEmpty()) throw new LinksNotFoundException();
+
+        return linksRepository.findAllByUserId(userId)
               .stream()
               .map(LinksMapper::toResponse)
               .toList();
