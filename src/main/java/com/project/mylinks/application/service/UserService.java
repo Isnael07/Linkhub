@@ -3,7 +3,7 @@ package com.project.mylinks.application.service;
 import com.project.mylinks.api.dto.userDTO.CreateUserDTO;
 import com.project.mylinks.api.dto.userDTO.UserResponseDTO;
 import com.project.mylinks.api.dto.userDTO.UserUpdateDTO;
-import com.project.mylinks.application.exception.UserNotFoundExeception;
+import com.project.mylinks.application.exception.UserNotFoundException;
 import com.project.mylinks.domain.model.User;
 import com.project.mylinks.infrastructure.persistency.jpa.UserRepositoryJpa;
 import com.project.mylinks.infrastructure.persistency.mapper.UserMapper;
@@ -44,20 +44,21 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserResponseDTO findById(UUID id) {
         User user = repository.findById(id)
-                .orElseThrow(UserNotFoundExeception::new);
+                .orElseThrow(UserNotFoundException::new);
+
         return toResponse(user);
     }
 
     public void delete(UUID id) {
         if (!repository.existsById(id)) {
-            throw new UserNotFoundExeception();
+            throw new UserNotFoundException();
         }
         repository.deleteById(id);
     }
 
     public UserResponseDTO update(UUID id, UserUpdateDTO dto) {
         User user = repository.findById(id)
-                .orElseThrow(UserNotFoundExeception::new);
+                .orElseThrow(UserNotFoundException::new);
 
         if (dto.username() != null) user.setUsername(dto.username());
         if (dto.password() != null) user.setPassword(dto.password());
