@@ -9,7 +9,8 @@ import java.util.UUID;
 @Component("permissionHandler")
 public class PermissionHandler {
 
-    private static final String ADMIM = "ADMIN";
+    private static final String ADMIN = "ADMIN";
+
 
     private final LinksService linksService;
 
@@ -25,19 +26,20 @@ public class PermissionHandler {
         if (ownerId == null) return false;
         if (ownerId.equals(userId)) return true;
 
-        return AuthUtil.hasRole(ADMIM);
+        return AuthUtil.hasRole(ADMIN);
+
     }
 
     public boolean canPermissionLinksByUserId(CreateLinksDTO dto){
         UUID user = AuthUtil.getAuthenticatedUserId();
-        return user.equals(dto.userId()) || AuthUtil.hasRole(ADMIM);
+        return user.equals(dto.userId()) || AuthUtil.hasRole(ADMIN);
     }
 
     public boolean canPermissionUser(UUID userId){
         UUID id =  AuthUtil.getAuthenticatedUserId();
         if(id.equals(userId)) return true;
 
-        return AuthUtil.hasRole(ADMIM);
+        return AuthUtil.hasRole(ADMIN);
     }
 }
 
