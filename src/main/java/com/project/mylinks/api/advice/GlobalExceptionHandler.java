@@ -2,7 +2,8 @@ package com.project.mylinks.api.advice;
 
 
 import com.project.mylinks.application.exception.BusinessValidationException;
-import com.project.mylinks.application.exception.UserNotFoundExeception;
+import com.project.mylinks.application.exception.LinksNotFoundException;
+import com.project.mylinks.application.exception.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,20 +16,22 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(UserNotFoundExeception.class)
-    public ResponseEntity<Object> handleEntidadeNaoEncontrada(UserNotFoundExeception ex) {
-        return buildErrorResponse(ex.getMessage(), null, HttpStatus.NOT_FOUND);
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<Object> handleUserNotFound(UserNotFoundException ex) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Object> handlerLinksNotFound(LinksNotFoundException ex){
+        return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
     @ExceptionHandler(BusinessValidationException.class)
-    public ResponseEntity<Object> handleValidacaoNegocio(BusinessValidationException ex) {
-        return buildErrorResponse(ex.getMessage(), null, HttpStatus.BAD_REQUEST);
+    public ResponseEntity<Object> handleBusinessValidation(BusinessValidationException ex) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
-    private ResponseEntity<Object> buildErrorResponse(String mensagem, Object detalhes, HttpStatus status) {
+    private ResponseEntity<Object> buildErrorResponse(String mensagem, HttpStatus status) {
         Map<String, Object> body = new HashMap<>();
         body.put(ErrorResponseAttributes.MENSAGEM, mensagem);
-        if (detalhes != null) {
-            body.put(ErrorResponseAttributes.DETALHES, detalhes);
-        }
         body.put(ErrorResponseAttributes.STATUS, status.value());
         body.put(ErrorResponseAttributes.TIMESTAMP, LocalDateTime.now());
         return ResponseEntity.status(status).body(body);
