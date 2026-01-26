@@ -1,4 +1,4 @@
 package com.project.mylinks.api.dto.loginDTOs;
 
-public record LoginResponseDTO(String acessesToken, Long expiresIn) {
+public record LoginResponseDTO(String accessToken, String refreshToken, Long expiresIn) {
 }
