@@ -30,4 +30,7 @@ public interface AuthController {
     @ApiResponse(responseCode = "409", description = "User already exists")
 
     ResponseEntity<Void> signUp(CreateUserDTO dto);
+
+
+    ResponseEntity<LoginResponseDTO> refresh(String refreshToken);
 }
