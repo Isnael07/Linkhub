@@ -39,7 +39,9 @@ public class UserMapper {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                linksDTOs
+                linksDTOs,
+                user.getRefreshToken()
+
         );
     }
 

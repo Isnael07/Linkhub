@@ -7,7 +7,6 @@ import com.project.mylinks.api.dto.loginDTOs.LoginRequestDTO;
 
 import com.project.mylinks.api.dto.userDTO.CreateUserDTO;
 import com.project.mylinks.application.service.AuthService;
-import com.project.mylinks.domain.model.User;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
