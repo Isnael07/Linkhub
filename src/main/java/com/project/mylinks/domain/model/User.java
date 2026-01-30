@@ -16,7 +16,6 @@ import java.util.UUID;
 @Builder
 @Getter
 @Setter
-@Data
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -33,6 +32,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "cargo", nullable = false)
     private UserRole role;
+
+
+    private String refreshToken;
 
     public boolean isLoginCorrect(String password, BCryptPasswordEncoder passwordEncoder) {
         return passwordEncoder.matches(password, this.password);
