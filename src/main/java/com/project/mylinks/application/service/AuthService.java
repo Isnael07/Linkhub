@@ -17,7 +17,9 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.UUID;
@@ -40,6 +42,9 @@ public class AuthService {
     public LoginResponseDTO login(LoginRequestDTO login) {
 
         User user = authenticate(login);
+        String hashToken = generateRefreshToken();
+        user.setRefreshToken(hashToken);
+        repository.save(user);
         String accessToken = generateAccessToken(user);
 
         return new LoginResponseDTO(
@@ -54,8 +59,6 @@ public class AuthService {
         User user = toEntity(dto);
         var encode = passwordEncoder.encode(user.getPassword());
         user.setPassword(encode);
-        String hashToken = UUID.randomUUID().toString();
-        user.setRefreshToken(hashToken);
 
         repository.save(user);
     }
@@ -112,5 +115,11 @@ public class AuthService {
         }
     }
 
-    
+    public static String generateRefreshToken() {
+        SecureRandom random = new SecureRandom();
+        byte[] bytes = new byte[64];
+        random.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
 }
