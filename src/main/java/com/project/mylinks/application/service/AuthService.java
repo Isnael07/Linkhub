@@ -19,6 +19,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.HexFormat;
 import java.util.List;
@@ -42,8 +43,11 @@ public class AuthService {
     public LoginResponseDTO login(LoginRequestDTO login) {
 
         User user = authenticate(login);
-        String hashToken = generateRefreshToken();
-        user.setRefreshToken(hashToken);
+
+        if (needsNewRefreshToken(user)){
+            user.setRefreshToken(generateRefreshToken());
+            user.setCreatedTokenAt(Instant.now());
+        }
         repository.save(user);
         String accessToken = generateAccessToken(user);
 
@@ -57,6 +61,7 @@ public class AuthService {
     public void signUp(CreateUserDTO dto){
         if (repository.existsByEmail(dto.email())) throw new EmailAlreadyUseException();
         User user = toEntity(dto);
+
         var encode = passwordEncoder.encode(user.getPassword());
         user.setPassword(encode);
 
@@ -121,5 +126,11 @@ public class AuthService {
         random.nextBytes(bytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
+
+    private boolean needsNewRefreshToken(User user) {
+        return user.getRefreshToken() == null ||
+                user.getCreatedTokenAt().isBefore(Instant.now().minus(15, ChronoUnit.DAYS));
+    }
+
 
 }

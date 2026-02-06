@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,8 +34,9 @@ public class User {
     @Column(name = "cargo", nullable = false)
     private UserRole role;
 
-
     private String refreshToken;
+
+    private Instant createdTokenAt;
 
     public boolean isLoginCorrect(String password, BCryptPasswordEncoder passwordEncoder) {
         return passwordEncoder.matches(password, this.password);
