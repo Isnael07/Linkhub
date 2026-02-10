@@ -1,10 +1,6 @@
 name: CI - JUnit Tests
 
-on:
-  push:
-    branches: [ "test-pipeline-junit" ]
-  pull_request:
-    branches: [ "test-pipeline-junit" ]
+on: [push, pull_request]
 
 jobs:
   test:
