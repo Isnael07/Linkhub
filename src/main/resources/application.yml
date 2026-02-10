@@ -18,7 +18,7 @@ spring:
         format_sql: true
 
 jwt:
-  secret: 807XQJV0f99QICHbGXnGOoqtRJ8PVeIN
+  secret: ${JWT_SECRET}
 
 springdoc:
   swagger-ui:

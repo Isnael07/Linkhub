@@ -2,28 +2,13 @@ name: CI - JUnit Tests
 
 on:
   push:
-    branches: [ "test-pipeline-junit"]
+    branches: [ "test-pipeline-junit" ]
   pull_request:
     branches: [ "test-pipeline-junit" ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_DB: mydatabase
-          POSTGRES_USER: myuser
-          POSTGRES_PASSWORD: secret
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
       - uses: actions/checkout@v4
@@ -36,4 +21,6 @@ jobs:
           cache: maven
 
       - name: Rodar testes
-        run: mvn test -Dspring.profiles.active=test
+        run: mvn clean test "-Dspring.profiles.active=test"
+    env:
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
