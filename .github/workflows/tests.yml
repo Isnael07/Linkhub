@@ -36,4 +36,4 @@ jobs:
           cache: maven
 
       - name: Rodar testes
-        run: mvn test
+        run: mvn test -Dspring.profiles.active=test
