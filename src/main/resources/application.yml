@@ -18,10 +18,7 @@ spring:
         format_sql: true
 
 jwt:
-  private:
-    key: classpath:app.key
-  public:
-    key: classpath:app.pub
+  secret: 807XQJV0f99QICHbGXnGOoqtRJ8PVeIN
 
 springdoc:
   swagger-ui:
