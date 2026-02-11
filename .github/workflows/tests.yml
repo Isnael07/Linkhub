@@ -1,0 +1,22 @@
+name: CI - JUnit Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Rodar testes
+        run: mvn clean test "-Dspring.profiles.active=test"
+    env:
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
