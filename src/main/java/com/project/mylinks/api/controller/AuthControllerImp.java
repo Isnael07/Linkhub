@@ -13,6 +13,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -54,16 +56,21 @@ public class AuthControllerImp implements AuthController {
         long expiresIn = 300L;
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("my-links-v0")
+                .issuer("links-hub-v0")
                 .subject(user.get().getId().toString())
                 .claim("roles", List.of("ROLE_" + user.get().getRole().name()))
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(expiresIn))
                 .build();
 
-        String jwtValue = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+        String token = jwtEncoder.encode(
+                JwtEncoderParameters.from(
+                        JwsHeader.with(MacAlgorithm.HS256).build(),
+                        claims
+                )
+        ).getTokenValue();
 
-        return ResponseEntity.ok(new LoginResponseDTO(jwtValue, expiresIn));
+        return ResponseEntity.ok(new LoginResponseDTO(token, expiresIn));
     }
 
     @PostMapping("/signup")
