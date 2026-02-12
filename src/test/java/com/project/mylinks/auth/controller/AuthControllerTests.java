@@ -60,7 +60,7 @@ class AuthControllerTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJson(login)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.acessesToken").exists())
+                .andExpect(jsonPath("$.accessToken").exists())
                 .andExpect(jsonPath("$.expiresIn").value(300));
     }
 
@@ -93,7 +93,9 @@ class AuthControllerTests {
         mockMvc.perform(post("/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJson(dto)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.mensagem")
+                        .value("Email já em uso"));
     }
 
 
