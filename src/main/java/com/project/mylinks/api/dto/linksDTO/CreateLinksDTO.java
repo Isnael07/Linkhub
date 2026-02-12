@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public record CreateLinksDTO(
         @NotBlank
-        @Size(min = 3, max = 20)
+        @Size(max = 20)
         String nameUrl,
         @NotBlank
         String url,
