@@ -9,6 +9,8 @@ import com.project.mylinks.domain.model.User;
 import com.project.mylinks.infrastructure.persistency.jpa.UserRepositoryJpa;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -87,7 +89,12 @@ public class AuthService {
                 .expiresAt(now.plusSeconds(expiresIn))
                 .build();
 
-        return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+        return jwtEncoder.encode(
+                JwtEncoderParameters.from(
+                        JwsHeader.with(MacAlgorithm.HS256).build(),
+                        claims
+                )
+        ).getTokenValue();
     }
 
      public LoginResponseDTO refresh(String refreshToken){
