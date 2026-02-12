@@ -19,7 +19,7 @@ public interface AuthController {
     @ApiResponse(responseCode = "400", description = "Invalid login request")
     @ApiResponse(responseCode = "401", description = "Invalid credentials")
 
-    ResponseEntity<LoginResponseDTO> login(LoginRequestDTO login);
+    ResponseEntity<LoginResponseDTO> login(LoginRequestDTO login) throws Exception;
 
     @Operation(
             summary = "Register new user",
@@ -30,4 +30,7 @@ public interface AuthController {
     @ApiResponse(responseCode = "409", description = "User already exists")
 
     ResponseEntity<Void> signUp(CreateUserDTO dto);
+
+
+    ResponseEntity<LoginResponseDTO> refresh(String refreshToken);
 }

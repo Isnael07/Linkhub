@@ -2,6 +2,7 @@ package com.project.mylinks.api.advice;
 
 
 import com.project.mylinks.application.exception.BusinessValidationException;
+import com.project.mylinks.application.exception.EmailAlreadyUseException;
 import com.project.mylinks.application.exception.LinksNotFoundException;
 import com.project.mylinks.application.exception.UserNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handleUserNotFound(UserNotFoundException ex) {
         return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
-
+    @ExceptionHandler(EmailAlreadyUseException.class)
+    public ResponseEntity<Object> handleEmailAlreadyUsed(EmailAlreadyUseException ex) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
     @ExceptionHandler
     public ResponseEntity<Object> handlerLinksNotFound(LinksNotFoundException ex){
         return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
