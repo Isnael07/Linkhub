@@ -81,7 +81,7 @@ class UserPermissionTests {
                         .content(asJson(dto)))
                 .andReturn();
 
-        return JsonPath.read(res.getResponse().getContentAsString(), "$.acessesToken");
+        return JsonPath.read(res.getResponse().getContentAsString(), "$.accessToken");
     }
 
 
