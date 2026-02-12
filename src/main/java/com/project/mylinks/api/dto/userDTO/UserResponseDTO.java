@@ -9,6 +9,5 @@ public record UserResponseDTO(
         UUID id,
         String username,
         String email,
-        List<LinksResponseDTO> links,
-        String refreshToken
+        List<LinksResponseDTO> links
 ){}
