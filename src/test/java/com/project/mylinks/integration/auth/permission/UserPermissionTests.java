@@ -1,4 +1,4 @@
-package com.project.mylinks.auth.permission;
+package com.project.mylinks.integration.auth.permission;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;

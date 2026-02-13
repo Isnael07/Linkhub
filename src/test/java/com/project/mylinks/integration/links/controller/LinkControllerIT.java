@@ -1,4 +1,4 @@
-package com.project.mylinks.integration.controller;
+package com.project.mylinks.integration.links.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.mylinks.api.dto.linksDTO.CreateLinksDTO;
@@ -20,7 +20,6 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
