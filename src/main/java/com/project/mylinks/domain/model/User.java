@@ -1,9 +1,10 @@
 package com.project.mylinks.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.project.mylinks.application.domain.policy.RefreshTokenPolicy;
+import com.project.mylinks.application.domain.service.TokenService;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.Instant;
 import java.util.List;
@@ -38,7 +39,14 @@ public class User {
 
     private Instant createdTokenAt;
 
-    public boolean isLoginCorrect(String password, BCryptPasswordEncoder passwordEncoder) {
-        return passwordEncoder.matches(password, this.password);
+
+    public void rotateRefreshTokenIfNeeded(RefreshTokenPolicy policy,
+                                           TokenService tokenService) {
+
+        if (policy.needsNew(this)) {
+            this.refreshToken = tokenService.generateRefreshToken();
+            this.createdTokenAt = Instant.now();
+        }
     }
+
 }
