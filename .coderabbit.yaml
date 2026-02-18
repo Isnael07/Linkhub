@@ -1,53 +1,36 @@
+
 reviews:
   profile: assertive
-  auto_review: true
-  request_changes: true
-  max_comments: 20
+  review_status: true
+  request_changes_workflow: true
+  high_level_summary: true
   collapse_walkthrough: true
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+      - dev
 
-paths:
+path_filters:
   include:
     - "src/**"
   exclude:
     - "**/target/**"
     - "**/build/**"
     - "**/.github/**"
+    - "**/*.md"
 
-languages:
+language_rules:
   java:
     enabled: true
     focus:
       - security
       - null_safety
-      - spring_best_practices
-      - exception_handling
+      - spring
       - performance
       - concurrency
+      - exception_handling
 
-spring:
-  enabled: true
-  checks:
-    - controller_validation
-    - transactional_usage
-    - repository_queries
-    - permission_annotations
-    - exception_handler_advice
-
-security:
-  jwt:
-    enabled: true
-    check:
-      - weak_secret
-      - missing_expiration
-      - wrong_algorithm
-  sql_injection: true
-  csrf: true
-  xss: true
-
-testing:
-  require_tests_for:
-    - service
-    - controller
-  frameworks:
-    - junit
-    - mockito
+chat:
+  auto_reply: true
