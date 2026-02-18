@@ -1,11 +1,11 @@
-package com.project.mylinks.auth.permission;
+package com.project.mylinks.integration.links.permission;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
-import com.project.mylinks.api.dto.loginDTOs.LoginRequestDTO;
-import com.project.mylinks.api.dto.userDTO.UserUpdateDTO;
+import com.project.mylinks.domain.model.Links;
 import com.project.mylinks.domain.model.User;
 import com.project.mylinks.domain.model.UserRole;
+import com.project.mylinks.infrastructure.persistency.jpa.LinksRepositoryJpa;
 import com.project.mylinks.infrastructure.persistency.jpa.UserRepositoryJpa;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-class UserPermissionTests {
+class LinkPermissionTests {
 
     @Autowired
     MockMvc mockMvc;
@@ -35,14 +35,21 @@ class UserPermissionTests {
     UserRepositoryJpa userRepo;
 
     @Autowired
+    LinksRepositoryJpa linkRepo;
+
+    @Autowired
     BCryptPasswordEncoder encoder;
 
     UUID adminId;
     UUID userId;
     UUID otherUserId;
 
+    UUID userLinkId;
+    UUID otherUserLinkId;
+
     @BeforeEach
     void setup() {
+        linkRepo.deleteAll();
         userRepo.deleteAll();
 
         User admin = new User();
@@ -59,14 +66,26 @@ class UserPermissionTests {
 
         User otherUser = new User();
         otherUser.setUsername("otherUser");
-        otherUser.setEmail("otherUser@mail.com");
+        otherUser.setEmail("other@mail.com");
         otherUser.setPassword(encoder.encode("123"));
         otherUser.setRole(UserRole.USER);
-
 
         adminId = userRepo.save(admin).getId();
         userId = userRepo.save(user).getId();
         otherUserId = userRepo.save(otherUser).getId();
+
+        Links userLink = new Links();
+        userLink.setNameUrl("User Link");
+        userLink.setUrl("https://user.com");
+        userLink.setUser(user);
+
+        Links otherLink = new Links();
+        otherLink.setNameUrl("Other Link");
+        otherLink.setUrl("https://other.com");
+        otherLink.setUser(otherUser);
+
+        userLinkId = linkRepo.save(userLink).getId();
+        otherUserLinkId = linkRepo.save(otherLink).getId();
     }
 
     private String asJson(Object obj) throws Exception {
@@ -74,7 +93,7 @@ class UserPermissionTests {
     }
 
     String login(String email) throws Exception {
-        LoginRequestDTO dto = new LoginRequestDTO(email, "123");
+        var dto = new com.project.mylinks.api.dto.loginDTOs.LoginRequestDTO(email, "123");
 
         MvcResult res = mockMvc.perform(post("/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -84,99 +103,92 @@ class UserPermissionTests {
         return JsonPath.read(res.getResponse().getContentAsString(), "$.accessToken");
     }
 
-
     @Test
-    void adminCanListUsers() throws Exception {
+    void adminCanListAllLinks() throws Exception {
         String token = login("admin@mail.com");
 
-        mockMvc.perform(get("/user")
-                        .header("Authorization","Bearer "+token))
+        mockMvc.perform(get("/links")
+                        .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void adminCanDeleteAnyUser() throws Exception {
-        String token = login("admin@mail.com");
-
-        mockMvc.perform(delete("/user/{id}", userId)
-                        .header("Authorization","Bearer "+token))
-                .andExpect(status().isNoContent());
-    }
-
-    @Test
-    void userCannotListUsers() throws Exception {
+    void userCannotListAllLinks() throws Exception {
         String token = login("user@mail.com");
 
-        mockMvc.perform(get("/user")
-                        .header("Authorization","Bearer "+token))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void userCanAccessOwnProfile() throws Exception {
-        String token = login("user@mail.com");
-
-        mockMvc.perform(get("/user/{id}", userId)
-                        .header("Authorization","Bearer "+token))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void userCannotDeleteOtherUser() throws Exception {
-        String token = login("user@mail.com");
-
-        mockMvc.perform(delete("/user/{id}", otherUserId)
-                        .header("Authorization","Bearer "+token))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void userCannotDeleteAdmin() throws Exception {
-        String token = login("user@mail.com");
-
-        mockMvc.perform(delete("/user/{id}", adminId)
+        mockMvc.perform(get("/links")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    void adminCanUpdateAnyUser() throws Exception {
+    void userCanDeleteOwnLink() throws Exception {
+        String token = login("user@mail.com");
+
+        mockMvc.perform(delete("/links/{id}", userLinkId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void userCannotDeleteOtherLink() throws Exception {
+        String token = login("user@mail.com");
+
+        mockMvc.perform(delete("/links/{id}", otherUserLinkId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void adminCanDeleteAnyLink() throws Exception {
         String token = login("admin@mail.com");
 
-        UserUpdateDTO dto = new UserUpdateDTO("newName", "new");
+        mockMvc.perform(delete("/links/{id}", otherUserLinkId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isNoContent());
+    }
 
-        mockMvc.perform(patch("/user/{id}", userId)
-                        .header("Authorization","Bearer " + token)
+    @Test
+    void userCanUpdateOwnLink() throws Exception {
+        String token = login("user@mail.com");
+
+        var dto = new com.project.mylinks.api.dto.linksDTO.LinksUpdateDTO("New", "https://new.com");
+
+        mockMvc.perform(patch("/links/{id}", userLinkId)
+                        .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJson(dto)))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void userCannotUpdateOtherUser() throws Exception {
+    void userCannotUpdateOtherLink() throws Exception {
         String token = login("user@mail.com");
 
-        UserUpdateDTO dto = new UserUpdateDTO("newName", "new");
+        var dto = new com.project.mylinks.api.dto.linksDTO.LinksUpdateDTO("New", "https://new.com");
 
-        mockMvc.perform(patch("/user/{id}", otherUserId)
-                        .header("Authorization","Bearer " + token)
+        mockMvc.perform(patch("/links/{id}", otherUserLinkId)
+                        .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJson(dto)))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    void userCanUpdateOwnProfile() throws Exception {
+    void userCanListOwnLinks() throws Exception {
         String token = login("user@mail.com");
 
-        UserUpdateDTO dto = new UserUpdateDTO("newName", "new");
-
-        mockMvc.perform(patch("/user/{id}", userId)
-                        .header("Authorization","Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJson(dto)))
+        mockMvc.perform(get("/links/users/{id}/links", userId)
+                        .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
     }
 
-}
+    @Test
+    void userCannotListOtherUserLinks() throws Exception {
+        String token = login("user@mail.com");
 
+        mockMvc.perform(get("/links/users/{id}/links", otherUserId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+    }
+}

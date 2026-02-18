@@ -1,4 +1,4 @@
-package com.project.mylinks.auth.controller;
+package com.project.mylinks.integration.auth.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.mylinks.api.dto.loginDTOs.LoginRequestDTO;

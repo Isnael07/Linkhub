@@ -1,4 +1,4 @@
-package com.project.mylinks.auth.security;
+package com.project.mylinks.integration.auth.security;
 
 
 import org.junit.jupiter.api.Test;

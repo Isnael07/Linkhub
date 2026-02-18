@@ -18,7 +18,6 @@ public class PermissionHandler {
         this.linksService = linksService;
     }
 
-
     public boolean canPermissionLinks(UUID linkId){
         UUID userId = AuthUtil.getAuthenticatedUserId();
         UUID ownerId = linksService.findOwnerId(linkId);
@@ -27,19 +26,16 @@ public class PermissionHandler {
         if (ownerId.equals(userId)) return true;
 
         return AuthUtil.hasRole(ADMIN);
-
     }
 
     public boolean canPermissionLinksByUserId(CreateLinksDTO dto){
-        UUID user = AuthUtil.getAuthenticatedUserId();
-        return user.equals(dto.userId()) || AuthUtil.hasRole(ADMIN);
+        UUID userId = AuthUtil.getAuthenticatedUserId();
+        return userId.equals(dto.userId()) || AuthUtil.hasRole(ADMIN);
     }
 
     public boolean canPermissionUser(UUID userId){
-        UUID id =  AuthUtil.getAuthenticatedUserId();
-        if(id.equals(userId)) return true;
-
-        return AuthUtil.hasRole(ADMIN);
+        UUID id = AuthUtil.getAuthenticatedUserId();
+        return id.equals(userId) || AuthUtil.hasRole(ADMIN);
     }
 }
 
