@@ -10,6 +10,7 @@ import com.project.mylinks.infrastructure.persistency.mapper.UserMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
@@ -42,6 +43,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "users",  key = "#id")
     public UserResponseDTO findById(UUID id) {
         User user = repository.findById(id)
                 .orElseThrow(UserNotFoundException::new);
