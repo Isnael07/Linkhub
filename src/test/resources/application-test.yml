@@ -17,5 +17,9 @@ spring:
     console:
       enabled: false
 
+
+  cache:
+    type: none
+
 jwt:
   secret: ${JWT_SECRET}
