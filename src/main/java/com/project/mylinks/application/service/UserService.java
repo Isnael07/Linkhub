@@ -9,6 +9,7 @@ import com.project.mylinks.infrastructure.persistency.jpa.UserRepositoryJpa;
 import com.project.mylinks.infrastructure.persistency.mapper.UserMapper;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -53,9 +54,15 @@ public class UserService {
         return toResponse(user);
     }
 
-    @CacheEvict(cacheNames = "users", key = "#id")
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "users", key = "#id", beforeInvocation = true),
+            @CacheEvict(cacheNames = "user_links", key = "#id", beforeInvocation = true)
+    })
     public void delete(UUID id) {
-        repository.deleteById(id);
+        User user = repository.findById(id)
+                .orElseThrow(UserNotFoundException::new);
+
+        repository.delete(user);
     }
 
     @CachePut(cacheNames = "users", key = "#id")
