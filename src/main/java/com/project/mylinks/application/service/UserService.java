@@ -55,9 +55,6 @@ public class UserService {
 
     @CacheEvict(cacheNames = "users", key = "#id")
     public void delete(UUID id) {
-        if (!repository.existsById(id)) {
-            throw new UserNotFoundException();
-        }
         repository.deleteById(id);
     }
 
