@@ -7,6 +7,8 @@ import com.project.mylinks.application.exception.UserNotFoundException;
 import com.project.mylinks.domain.model.User;
 import com.project.mylinks.infrastructure.persistency.jpa.UserRepositoryJpa;
 import com.project.mylinks.infrastructure.persistency.mapper.UserMapper;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -51,6 +53,7 @@ public class UserService {
         return toResponse(user);
     }
 
+    @CacheEvict(cacheNames = "users", key = "#id")
     public void delete(UUID id) {
         if (!repository.existsById(id)) {
             throw new UserNotFoundException();
@@ -58,6 +61,7 @@ public class UserService {
         repository.deleteById(id);
     }
 
+    @CachePut(cacheNames = "users", key = "#id")
     public UserResponseDTO update(UUID id, UserUpdateDTO dto) {
         User user = repository.findById(id)
                 .orElseThrow(UserNotFoundException::new);
