@@ -1,0 +1,34 @@
+name: CodeQL
+
+on:
+  pull_request:
+    branches: [ "main", "dev"]
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: java
+
+      - name: Build Project
+        run: mvn clean compile -DskipTests
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@v3
