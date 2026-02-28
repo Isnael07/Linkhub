@@ -32,5 +32,14 @@ public interface AuthController {
     ResponseEntity<Void> signUp(CreateUserDTO dto);
 
 
+    @Operation(
+            summary = "Refresh access token",
+            description = "Generates a new access token using a valid refresh token."
+    )
+    @ApiResponse(responseCode = "200", description = "New access token successfully generated")
+    @ApiResponse(responseCode = "400", description = "Invalid refresh token request")
+    @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token")
+    @ApiResponse(responseCode = "404", description = "User not found")
+
     ResponseEntity<LoginResponseDTO> refresh(String refreshToken);
 }
