@@ -12,51 +12,58 @@ export function SigninForm() {
     errors,
     isSubmitting,
     success,
-    onSubmit
+    onSubmit,
   } = useSignin();
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-
-      <div className="space-y-1">
-        <Label htmlFor="email">Email</Label>
+      <div className="space-y-2">
+        <Label htmlFor="email" className="text-zinc-300">
+          Email
+        </Label>
         <Input
           id="email"
           type="email"
           placeholder="email@exemplo.com"
           {...register("email")}
+          className="border-white/10 bg-zinc-800 text-white placeholder:text-zinc-500 focus:border-violet-500"
         />
         {errors.email && (
-          <p className="text-red-500 text-sm">{errors.email.message}</p>
+          <p className="text-sm text-red-400">{errors.email.message}</p>
         )}
       </div>
 
-      <div className="space-y-1">
-        <Label htmlFor="password">Senha</Label>
+      <div className="space-y-2">
+        <Label htmlFor="password" className="text-zinc-300">
+          Senha
+        </Label>
         <Input
           id="password"
           type="password"
           placeholder="••••••••"
           {...register("password")}
+          className="border-white/10 bg-zinc-800 text-white placeholder:text-zinc-500 focus:border-violet-500"
         />
         {errors.password && (
-          <p className="text-red-500 text-sm">{errors.password.message}</p>
+          <p className="text-sm text-red-400">{errors.password.message}</p>
         )}
       </div>
 
-      {/* erro global */}
       {errors.root?.serverError?.message && (
-        <p className="text-red-500 text-sm">
+        <p className="text-sm text-red-400">
           {errors.root.serverError.message}
         </p>
       )}
 
-      {/* sucesso */}
       {success && (
-        <p className="text-green-600 text-sm">{success}</p>
+        <p className="text-sm text-emerald-400">{success}</p>
       )}
 
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
+      <Button
+        type="submit"
+        className="w-full bg-gradient-to-r from-violet-600 to-cyan-600 text-white hover:from-violet-500 hover:to-cyan-500"
+        disabled={isSubmitting}
+      >
         {isSubmitting ? "Entrando..." : "Entrar"}
       </Button>
     </form>
