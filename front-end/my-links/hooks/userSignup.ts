@@ -14,48 +14,33 @@ export function useSignup() {
     register,
     handleSubmit,
     setError,
-    formState: { errors, isSubmitting }
+    formState: { errors, isSubmitting },
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
   });
 
   const onSubmit = async (data: SignupFormData) => {
     try {
-      const response = await fetch("http://localhost:8080/signup", {
+      const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
 
       if (!response.ok) {
-        let message = "Erro ao criar conta";
-
-        try {
-          const body = await response.clone().json();
-          if (body?.message) message = body.message;
-        } catch {
-          // ignore JSON parsing errors
-        }
-
-        throw new Error(message);
+        const body = await response.json().catch(() => null);
+        throw new Error(body?.message || "Erro ao criar conta");
       }
 
       setSuccess("Conta criada com sucesso!");
-
       router.push("/signin");
-
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError("root.serverError", {
-          type: "server",
-          message: err.message,
-        });
-      } else {
-        setError("root.serverError", {
-          type: "server",
-          message: "Erro inesperado.",
-        });
-      }
+      const message =
+        err instanceof Error ? err.message : "Erro inesperado.";
+      setError("root.serverError", {
+        type: "server",
+        message,
+      });
     }
   };
 
