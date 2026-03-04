@@ -2,7 +2,6 @@ package com.project.mylinks.api.controller;
 
 import com.project.mylinks.api.config.security.annotations.CanPermissionLink;
 import com.project.mylinks.api.config.security.annotations.CanPermissionLinksByUserId;
-import com.project.mylinks.api.config.security.annotations.CanPermissionUser;
 import com.project.mylinks.api.controller.docs.LinkController;
 import com.project.mylinks.api.dto.linksDTO.CreateLinksDTO;
 import com.project.mylinks.api.dto.linksDTO.LinksResponseDTO;
@@ -66,7 +65,6 @@ public class LinkControllerImp implements LinkController {
     }
 
     @GetMapping("/users/{id}/links")
-    @CanPermissionUser
     @Override
     public ResponseEntity<List<LinksResponseDTO>> findAllLinksByUser(@PathVariable UUID id){
         List<LinksResponseDTO> links = service.findAllLinksByUserId(id);
