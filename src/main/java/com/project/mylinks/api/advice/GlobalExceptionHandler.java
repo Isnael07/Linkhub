@@ -1,10 +1,7 @@
 package com.project.mylinks.api.advice;
 
 
-import com.project.mylinks.application.exception.BusinessValidationException;
-import com.project.mylinks.application.exception.EmailAlreadyUseException;
-import com.project.mylinks.application.exception.LinksNotFoundException;
-import com.project.mylinks.application.exception.UserNotFoundException;
+import com.project.mylinks.application.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,9 +18,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handleUserNotFound(UserNotFoundException ex) {
         return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
+    @ExceptionHandler(UsernameAlreadyUseException.class)
+    public ResponseEntity<Object> handleUsernameAlreadyUseException(UsernameAlreadyUseException ex){
+        return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT);
+    }
     @ExceptionHandler(EmailAlreadyUseException.class)
     public ResponseEntity<Object> handleEmailAlreadyUsed(EmailAlreadyUseException ex) {
-        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
+        return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT);
     }
     @ExceptionHandler
     public ResponseEntity<Object> handlerLinksNotFound(LinksNotFoundException ex){
