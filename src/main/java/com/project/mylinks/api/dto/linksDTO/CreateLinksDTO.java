@@ -7,10 +7,10 @@ import jakarta.validation.constraints.Size;
 import java.util.UUID;
 
 public record CreateLinksDTO(
-        @NotBlank
-        @Size(max = 20)
+        @NotBlank(message = "O nome de Url é obrigatório.")
+        @Size(max = 20, message = "O máximo de caracteres é 20.")
         String nameUrl,
-        @NotBlank
+        @NotBlank(message = "A Url é obrigatório.")
         String url,
 
         @NotNull(message = "O ID do usuário é obrigatório")
