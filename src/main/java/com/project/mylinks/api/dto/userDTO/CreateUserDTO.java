@@ -12,6 +12,6 @@ public record CreateUserDTO(
         @NotBlank
         String email,
         @NotBlank
-        @Size(min = 8, message = "A senha deve ter no mínimo 8 caracteres")
+        @Size(min = 6, max = 16, message = "A senha deve ter no mínimo 6 ou máximo 16 caracteres")
         String password
 ) {}
