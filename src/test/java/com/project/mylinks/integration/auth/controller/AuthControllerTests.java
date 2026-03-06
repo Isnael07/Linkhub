@@ -93,7 +93,7 @@ class AuthControllerTests {
         mockMvc.perform(post("/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJson(dto)))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.mensagem")
                         .value("Email já em uso"));
     }
@@ -109,6 +109,18 @@ class AuthControllerTests {
                 .andExpect(status().isBadRequest());
     }
 
+
+    @Test
+    void shouldNotSignupWithDuplicateUsername() throws Exception {
+        CreateUserDTO dto = new CreateUserDTO("test", "new@gmail.com", "123");
+
+        mockMvc.perform(post("/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJson(dto)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.mensagem")
+                        .value("Username já em uso"));
+    }
 
 }
 

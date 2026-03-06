@@ -8,6 +8,7 @@ import com.project.mylinks.application.domain.service.PasswordService;
 import com.project.mylinks.application.domain.service.TokenService;
 import com.project.mylinks.application.exception.EmailAlreadyUseException;
 import com.project.mylinks.application.exception.UserNotFoundException;
+import com.project.mylinks.application.exception.UsernameAlreadyUseException;
 import com.project.mylinks.domain.model.User;
 import com.project.mylinks.infrastructure.persistency.jpa.UserRepositoryJpa;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -55,6 +56,8 @@ public class AuthService {
     public void signUp(CreateUserDTO dto) {
         if (repository.existsByEmail(dto.email()))
             throw new EmailAlreadyUseException();
+        if (repository.existsByUsername(dto.username()))
+            throw new UsernameAlreadyUseException();
 
         User user = toEntity(dto);
         user.setPassword(passwordService.encode(user.getPassword()));
