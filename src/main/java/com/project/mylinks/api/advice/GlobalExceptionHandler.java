@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
     }
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex){
-        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
+        return buildErrorResponse(ex.getBindingResult().toString(), HttpStatus.BAD_REQUEST);
     }
     private ResponseEntity<Object> buildErrorResponse(String mensagem, HttpStatus status) {
         Map<String, Object> body = new HashMap<>();
