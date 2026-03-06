@@ -76,7 +76,7 @@ class AuthControllerTests {
 
     @Test
     void shouldSignupSuccessfully() throws Exception {
-        CreateUserDTO dto = new CreateUserDTO("new", "new@gmail.com", "123");
+        CreateUserDTO dto = new CreateUserDTO("new", "new@gmail.com", "123456");
 
         mockMvc.perform(post("/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -88,7 +88,7 @@ class AuthControllerTests {
 
     @Test
     void shouldNotSignupWithDuplicateEmail() throws Exception {
-        CreateUserDTO dto = new CreateUserDTO("test", "test@gmail.com", "123");
+        CreateUserDTO dto = new CreateUserDTO("test", "test@gmail.com", "123456");
 
         mockMvc.perform(post("/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -112,7 +112,7 @@ class AuthControllerTests {
 
     @Test
     void shouldNotSignupWithDuplicateUsername() throws Exception {
-        CreateUserDTO dto = new CreateUserDTO("test", "new@gmail.com", "123");
+        CreateUserDTO dto = new CreateUserDTO("test", "new@gmail.com", "123456");
 
         mockMvc.perform(post("/signup")
                         .contentType(MediaType.APPLICATION_JSON)
