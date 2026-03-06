@@ -122,5 +122,24 @@ class AuthControllerTests {
                         .value("Username já em uso"));
     }
 
+    @Test
+    void shouldNotRegisterWithPasswordShorterEight() throws Exception {
+        CreateUserDTO dto = new CreateUserDTO("test", "new@gmail.com", "1234567");
+
+        mockMvc.perform(post("/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJson(dto)))
+                .andExpect(status().isBadRequest());
+    }
+    @Test
+    void shouldNotRegisterWithPasswordLongerSixteen() throws Exception {
+        CreateUserDTO dto = new CreateUserDTO("test", "new@gmail.com", "12345678123456789");
+
+        mockMvc.perform(post("/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJson(dto)))
+                .andExpect(status().isBadRequest());
+    }
+
 }
 
