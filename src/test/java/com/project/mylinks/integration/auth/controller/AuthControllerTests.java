@@ -46,7 +46,7 @@ class AuthControllerTests {
         User user = new User();
         user.setUsername("test");
         user.setEmail("test@gmail.com");
-        user.setPassword(passwordEncoder.encode("123456"));
+        user.setPassword(passwordEncoder.encode("12345678"));
         user.setRole(UserRole.USER);
 
         repository.save(user);
@@ -54,7 +54,7 @@ class AuthControllerTests {
 
     @Test
     void shouldLoginSuccessfully() throws Exception {
-        LoginRequestDTO login = new LoginRequestDTO("test@gmail.com", "123456");
+        LoginRequestDTO login = new LoginRequestDTO("test@gmail.com", "12345678");
 
         mockMvc.perform(post("/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -76,7 +76,7 @@ class AuthControllerTests {
 
     @Test
     void shouldSignupSuccessfully() throws Exception {
-        CreateUserDTO dto = new CreateUserDTO("new", "new@gmail.com", "123");
+        CreateUserDTO dto = new CreateUserDTO("new", "new@gmail.com", "12345678");
 
         mockMvc.perform(post("/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -88,7 +88,7 @@ class AuthControllerTests {
 
     @Test
     void shouldNotSignupWithDuplicateEmail() throws Exception {
-        CreateUserDTO dto = new CreateUserDTO("test", "test@gmail.com", "123");
+        CreateUserDTO dto = new CreateUserDTO("test", "test@gmail.com", "12345678");
 
         mockMvc.perform(post("/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -112,7 +112,7 @@ class AuthControllerTests {
 
     @Test
     void shouldNotSignupWithDuplicateUsername() throws Exception {
-        CreateUserDTO dto = new CreateUserDTO("test", "new@gmail.com", "123");
+        CreateUserDTO dto = new CreateUserDTO("test", "new@gmail.com", "12345678");
 
         mockMvc.perform(post("/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -120,6 +120,25 @@ class AuthControllerTests {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.mensagem")
                         .value("Username já em uso"));
+    }
+
+    @Test
+    void shouldNotRegisterWithPasswordShorterEight() throws Exception {
+        CreateUserDTO dto = new CreateUserDTO("test", "new@gmail.com", "1234567");
+
+        mockMvc.perform(post("/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJson(dto)))
+                .andExpect(status().isBadRequest());
+    }
+    @Test
+    void shouldNotRegisterWithPasswordLongerSixteen() throws Exception {
+        CreateUserDTO dto = new CreateUserDTO("test", "new@gmail.com", "12345678123456789");
+
+        mockMvc.perform(post("/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJson(dto)))
+                .andExpect(status().isBadRequest());
     }
 
 }

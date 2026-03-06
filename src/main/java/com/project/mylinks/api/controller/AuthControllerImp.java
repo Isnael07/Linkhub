@@ -24,14 +24,14 @@ public class AuthControllerImp implements AuthController {
 
     @PostMapping("/login")
     @Override
-    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO login) {
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid LoginRequestDTO login) {
 
         return ResponseEntity.ok(service.login(login));
     }
 
     @PostMapping("/signup")
     @Override
-    public ResponseEntity<Void> signUp(@RequestBody CreateUserDTO dto){
+    public ResponseEntity<Void> signUp(@RequestBody @Valid CreateUserDTO dto){
         service.signUp(dto);
         return ResponseEntity.ok().build();
     }
