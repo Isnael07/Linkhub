@@ -17,6 +17,4 @@ public interface UserRepositoryJpa extends JpaRepository<User, UUID> {
 
     Optional<User> findByRefreshToken(String refreshToken);
 
-
-    boolean existsByRefreshToken(String refreshToken);
 }
