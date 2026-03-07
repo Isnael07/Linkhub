@@ -6,7 +6,9 @@ import com.project.mylinks.api.dto.userDTO.CreateUserDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "Auth", description = "Endpoints for authentication and registration")
 public interface AuthController {
@@ -19,7 +21,8 @@ public interface AuthController {
     @ApiResponse(responseCode = "400", description = "Invalid login request")
     @ApiResponse(responseCode = "401", description = "Invalid credentials")
 
-    ResponseEntity<LoginResponseDTO> login(LoginRequestDTO login) throws Exception;
+    ResponseEntity<LoginResponseDTO> login(@Valid
+                                           @RequestBody LoginRequestDTO login) throws Exception;
 
     @Operation(
             summary = "Register new user",
@@ -29,7 +32,8 @@ public interface AuthController {
     @ApiResponse(responseCode = "400", description = "Invalid request data")
     @ApiResponse(responseCode = "409", description = "User already exists")
 
-    ResponseEntity<Void> signUp(CreateUserDTO dto);
+    ResponseEntity<Void> signUp(@Valid
+                                @RequestBody CreateUserDTO dto);
 
 
     @Operation(

@@ -95,11 +95,10 @@ public class LinksService {
         );
     }
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "user_links", key = "#userId")
-    public List<LinksResponseDTO> findAllLinksByUserId(UUID userId){
-        if(!userRepository.existsById(userId)) throw new UserNotFoundException();
+    @Cacheable(cacheNames = "user_links", key = "#username")
+    public List<LinksResponseDTO> findAllLinksByUsername(String username){
 
-        List<Links> links = linksRepository.findAllByUserId(userId);
+        List<Links> links = linksRepository.findByUserUsername(username);
 
         if(links.isEmpty()) throw new LinksNotFoundException();
 
@@ -107,4 +106,5 @@ public class LinksService {
               .map(LinksMapper::toResponse)
               .toList();
     }
+
 }
