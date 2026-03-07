@@ -73,8 +73,8 @@ public interface LinkController {
     @ApiResponse(responseCode = "403", description = "Access denied")
     @ApiResponse(responseCode = "404", description = "User not found")
     ResponseEntity<List<LinksResponseDTO>> findAllLinksByUser(
-            @Parameter(description = "User ID", required = true)
-            UUID id
+            @Parameter(description = "Username", required = true)
+            String username
     );
 
     @Operation(

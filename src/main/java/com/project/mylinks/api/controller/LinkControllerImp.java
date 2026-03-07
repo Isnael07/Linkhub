@@ -2,7 +2,6 @@ package com.project.mylinks.api.controller;
 
 import com.project.mylinks.api.config.security.annotations.CanPermissionLink;
 import com.project.mylinks.api.config.security.annotations.CanPermissionLinksByUserId;
-import com.project.mylinks.api.config.security.annotations.CanPermissionUser;
 import com.project.mylinks.api.controller.docs.LinkController;
 import com.project.mylinks.api.dto.linksDTO.CreateLinksDTO;
 import com.project.mylinks.api.dto.linksDTO.LinksResponseDTO;
@@ -65,11 +64,10 @@ public class LinkControllerImp implements LinkController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/users/{id}/links")
-    @CanPermissionUser
+    @GetMapping("/users/{username}/links")
     @Override
-    public ResponseEntity<List<LinksResponseDTO>> findAllLinksByUser(@PathVariable UUID id){
-        List<LinksResponseDTO> links = service.findAllLinksByUserId(id);
+    public ResponseEntity<List<LinksResponseDTO>> findAllLinksByUser(@PathVariable String username){
+        List<LinksResponseDTO> links = service.findAllLinksByUsername(username);
         return ResponseEntity.ok(links);
     }
 }
