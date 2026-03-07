@@ -8,10 +8,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 import java.util.UUID;
@@ -26,7 +29,8 @@ public interface LinkController {
     @ApiResponse(responseCode = "201", description = "Link successfully created")
     @ApiResponse(responseCode = "400", description = "Invalid request data")
     @ApiResponse(responseCode = "403", description = "Access denied")
-    ResponseEntity<LinksResponseDTO> create(CreateLinksDTO dto);
+    ResponseEntity<LinksResponseDTO> create( @Valid
+                                             @RequestBody CreateLinksDTO dto);
 
     @Operation(
             summary = "List all links",
@@ -74,7 +78,7 @@ public interface LinkController {
     @ApiResponse(responseCode = "404", description = "User not found")
     ResponseEntity<List<LinksResponseDTO>> findAllLinksByUser(
             @Parameter(description = "Username", required = true)
-            String username
+            @Size(min = 3, max = 20) String username
     );
 
     @Operation(
@@ -88,6 +92,8 @@ public interface LinkController {
     ResponseEntity<LinksResponseDTO> update(
             @Parameter(description = "Link ID", required = true)
             UUID id,
+            @Valid
+            @RequestBody
             LinksUpdateDTO dto
     );
 }

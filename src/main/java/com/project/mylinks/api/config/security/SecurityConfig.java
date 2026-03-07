@@ -49,7 +49,7 @@ public class SecurityConfig {
                                 "/login",
                                 "/signup",
                                 "/refresh/**",
-                                "/links/users/{username}/links"
+                                "/{username}"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

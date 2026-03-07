@@ -7,10 +7,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.UUID;
 
@@ -26,7 +28,8 @@ public interface UserController {
     @ApiResponse(responseCode = "403", description = "Access denied")
     @ApiResponse(responseCode = "409", description = "User already exists")
 
-    ResponseEntity<UserResponseDTO> create(CreateUserDTO dto);
+    ResponseEntity<UserResponseDTO> create(@Valid
+                                           @RequestBody CreateUserDTO dto);
 
     @Operation(
             summary = "List users",
@@ -78,6 +81,8 @@ public interface UserController {
     ResponseEntity<UserResponseDTO> update(
             @Parameter(description = "User ID", required = true)
             UUID id,
+            @Valid
+            @RequestBody
             UserUpdateDTO dto
     );
 }

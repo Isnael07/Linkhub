@@ -8,7 +8,6 @@ import com.project.mylinks.api.dto.linksDTO.LinksResponseDTO;
 import com.project.mylinks.api.dto.linksDTO.LinksUpdateDTO;
 import com.project.mylinks.application.service.LinksService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -65,9 +64,9 @@ public class LinkControllerImp implements LinkController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/users/{username}/links")
+    @GetMapping("/{username}/user")
     @Override
-    public ResponseEntity<List<LinksResponseDTO>> findAllLinksByUser(@PathVariable @Size(min = 3, max = 20) String username){
+    public ResponseEntity<List<LinksResponseDTO>> findAllLinksByUser(@PathVariable String username){
         List<LinksResponseDTO> links = service.findAllLinksByUsername(username);
         return ResponseEntity.ok(links);
     }

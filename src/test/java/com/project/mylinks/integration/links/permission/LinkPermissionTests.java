@@ -177,16 +177,16 @@ class LinkPermissionTests {
     @Test
     void userCanListOwnLinks() throws Exception {
         String token = login("user@mail.com");
-        mockMvc.perform(get("/links/users/{username}/links", "user")
+        mockMvc.perform(get("/links/{username}/user", "user")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void userCannotListOtherUserLinks() throws Exception {
+    void userCanListOtherUserLinks() throws Exception {
         String token = login("user@mail.com");
 
-        mockMvc.perform(get("/links/users/{username}/links", "otherUser")
+        mockMvc.perform(get("/links/{username}/user", "otherUser")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
     }
