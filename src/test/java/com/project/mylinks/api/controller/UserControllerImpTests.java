@@ -141,7 +141,7 @@ class UserControllerImpTests {
     void shouldUpdateUser() throws Exception {
         UUID id = UUID.randomUUID();
 
-        UserUpdateDTO update = new UserUpdateDTO("test", "223334");
+        UserUpdateDTO update = new UserUpdateDTO("test", "223334678");
 
         UserResponseDTO response = new UserResponseDTO(
                 id,

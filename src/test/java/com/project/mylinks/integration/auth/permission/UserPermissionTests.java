@@ -48,19 +48,19 @@ class UserPermissionTests {
         User admin = new User();
         admin.setUsername("admin");
         admin.setEmail("admin@mail.com");
-        admin.setPassword(encoder.encode("123"));
+        admin.setPassword(encoder.encode("12345678"));
         admin.setRole(UserRole.ADMIN);
 
         User user = new User();
         user.setUsername("user");
         user.setEmail("user@mail.com");
-        user.setPassword(encoder.encode("123"));
+        user.setPassword(encoder.encode("12345678"));
         user.setRole(UserRole.USER);
 
         User otherUser = new User();
         otherUser.setUsername("otherUser");
         otherUser.setEmail("otherUser@mail.com");
-        otherUser.setPassword(encoder.encode("123"));
+        otherUser.setPassword(encoder.encode("12345678"));
         otherUser.setRole(UserRole.USER);
 
 
@@ -74,7 +74,7 @@ class UserPermissionTests {
     }
 
     String login(String email) throws Exception {
-        LoginRequestDTO dto = new LoginRequestDTO(email, "123");
+        LoginRequestDTO dto = new LoginRequestDTO(email, "12345678");
 
         MvcResult res = mockMvc.perform(post("/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -143,7 +143,7 @@ class UserPermissionTests {
     void adminCanUpdateAnyUser() throws Exception {
         String token = login("admin@mail.com");
 
-        UserUpdateDTO dto = new UserUpdateDTO("newName", "new");
+        UserUpdateDTO dto = new UserUpdateDTO("newName", "newpassword");
 
         mockMvc.perform(patch("/user/{id}", userId)
                         .header("Authorization","Bearer " + token)
@@ -156,7 +156,7 @@ class UserPermissionTests {
     void userCannotUpdateOtherUser() throws Exception {
         String token = login("user@mail.com");
 
-        UserUpdateDTO dto = new UserUpdateDTO("newName", "new");
+        UserUpdateDTO dto = new UserUpdateDTO("newName", "newpassword");
 
         mockMvc.perform(patch("/user/{id}", otherUserId)
                         .header("Authorization","Bearer " + token)
@@ -169,7 +169,7 @@ class UserPermissionTests {
     void userCanUpdateOwnProfile() throws Exception {
         String token = login("user@mail.com");
 
-        UserUpdateDTO dto = new UserUpdateDTO("newName", "new");
+        UserUpdateDTO dto = new UserUpdateDTO("newName", "newpassword");
 
         mockMvc.perform(patch("/user/{id}", userId)
                         .header("Authorization","Bearer " + token)
