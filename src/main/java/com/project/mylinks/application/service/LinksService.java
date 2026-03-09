@@ -84,9 +84,7 @@ public class LinksService {
         );
     }
     @Transactional(readOnly = true)
-    public List<LinksResponseDTO> findAllLinksByUserId(UUID userId){
-        if(!userRepository.existsById(userId)) throw new UserNotFoundException();
-
+    public List<LinksResponseDTO> findAllLinksByUsername(String username){
         List<Links> links = linksRepository.findByUserUsername(username);
 
         if(links.isEmpty()) throw new LinksNotFoundException();
