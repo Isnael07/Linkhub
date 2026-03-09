@@ -11,12 +11,10 @@ import com.project.mylinks.infrastructure.persistency.jpa.LinksRepositoryJpa;
 import com.project.mylinks.infrastructure.persistency.jpa.UserRepositoryJpa;
 import com.project.mylinks.infrastructure.persistency.mapper.LinksMapper;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.cache.annotation.Cacheable;
 
 import java.util.List;
 import java.util.UUID;
@@ -54,17 +52,12 @@ public class LinksService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "links", key = "#id")
     public LinksResponseDTO findById(UUID id) {
         Links link = linksRepository.findById(id)
                 .orElseThrow(LinksNotFoundException::new);
         return toResponse(link);
     }
 
-    @Caching(evict = {
-            @CacheEvict(cacheNames = "links", key = "#id"),
-            @CacheEvict(cacheNames = "user_links", allEntries = true)
-    })
     public LinksResponseDTO update(UUID id, LinksUpdateDTO dto) {
         Links link = linksRepository.findById(id)
                 .orElseThrow(LinksNotFoundException::new);
@@ -76,10 +69,6 @@ public class LinksService {
         return toResponse(link);
     }
 
-    @Caching(evict = {
-            @CacheEvict(cacheNames = "links", key = "#id"),
-            @CacheEvict(cacheNames = "user_links", allEntries = true)
-    })
     public void delete(UUID id) {
         if (!linksRepository.existsById(id)) {
             throw new LinksNotFoundException();
@@ -95,8 +84,8 @@ public class LinksService {
         );
     }
     @Transactional(readOnly = true)
-    @Cacheable(cacheNames = "user_links", key = "#username")
-    public List<LinksResponseDTO> findAllLinksByUsername(String username){
+    public List<LinksResponseDTO> findAllLinksByUserId(UUID userId){
+        if(!userRepository.existsById(userId)) throw new UserNotFoundException();
 
         List<Links> links = linksRepository.findByUserUsername(username);
 

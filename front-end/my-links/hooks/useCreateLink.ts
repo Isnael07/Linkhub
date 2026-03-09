@@ -3,26 +3,21 @@
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { LinkFormData } from "@/schemas/linkSchema";
-import { jwtDecode } from "jwt-decode";
+import { useAuth } from "@/contexts/AuthContext";
 
-type JwtPayload = {
-  sub: string;
-  exp: number;
-  roles?: string[];
-};
-
-export function useCreateLink() {
+export function useCreateLink(onSuccess?: () => void) {
+  const { user } = useAuth();
   const {
     register,
     handleSubmit,
     setError,
     reset,
-    formState: { errors, isSubmitting }
+    formState: { errors, isSubmitting },
   } = useForm<LinkFormData>({
     defaultValues: {
       nameUrl: "",
       url: "",
-    }
+    },
   });
 
   const [success, setSuccess] = useState("");
@@ -31,29 +26,18 @@ export function useCreateLink() {
     setSuccess("");
 
     try {
-      const token = localStorage.getItem("jwt");
-
-      console.log("JWT enviado:", token);
-
-      if (!token) {
+      if (!user) {
         throw new Error("Usuário não autenticado.");
       }
 
-      const decoded = jwtDecode<JwtPayload>(token);
-      const userId = decoded.sub;
-
-      console.log("Payload enviado:", { ...data, userId });
-
-      const res = await fetch("http://localhost:8080/links", {
+      const res = await fetch("/api/links", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           ...data,
-          userId,
-        })
+          userId: user.userId,
+        }),
       });
 
       if (!res.ok) {
@@ -63,7 +47,7 @@ export function useCreateLink() {
 
       setSuccess("Link cadastrado com sucesso!");
       reset();
-
+      onSuccess?.();
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Erro inesperado.";
@@ -81,6 +65,6 @@ export function useCreateLink() {
     errors,
     isSubmitting,
     success,
-    onSubmit
+    onSubmit,
   };
 }
