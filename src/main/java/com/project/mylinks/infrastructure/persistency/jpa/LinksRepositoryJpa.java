@@ -9,7 +9,5 @@ import java.util.UUID;
 
 @Repository
 public interface LinksRepositoryJpa extends JpaRepository<Links, UUID> {
-
-    List<Links> findAllByUserId(UUID userId);
-
+    List<Links> findByUserUsername(String username);
 }

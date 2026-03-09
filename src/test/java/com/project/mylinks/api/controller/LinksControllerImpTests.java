@@ -164,7 +164,7 @@ class LinksControllerImpTests {
 
    @Test
     void shouldFindAllLinksByUser() throws Exception {
-        UUID userId =  UUID.randomUUID();
+        String username =  "username";
 
 
        LinksResponseDTO link1 = new LinksResponseDTO(
@@ -181,9 +181,9 @@ class LinksControllerImpTests {
 
        List<LinksResponseDTO> response = List.of(link1, link2);
 
-       when(service.findAllLinksByUserId(userId)).thenReturn(response);
+       when(service.findAllLinksByUsername(username)).thenReturn(response);
 
-       mockMvc.perform(get("/links/users/{id}/links", userId)
+       mockMvc.perform(get("/links/{username}/user", username)
                        .contentType(MediaType.APPLICATION_JSON))
 
                .andExpect(status().isOk())
