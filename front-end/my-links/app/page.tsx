@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Link2, ArrowRight, Shield, Zap, Globe } from "lucide-react";
+import { Link2, ArrowRight, Zap, Globe } from "lucide-react";
 
 export default function Home() {
   return (
@@ -95,7 +95,7 @@ export default function Home() {
 
         {/* Feature cards */}
         <div
-          className="mt-24 grid w-full max-w-4xl gap-6 sm:grid-cols-3 animate-slide-up"
+          className="mt-24 grid w-full max-w-4xl gap-6 sm:grid-cols-2 animate-slide-up"
           style={{ animationDelay: "0.5s" }}
         >
           <div className="glass rounded-2xl p-6 text-left transition-all hover:border-violet-500/20">
@@ -105,16 +105,6 @@ export default function Home() {
             <h3 className="text-lg font-semibold text-white">Links Organizados</h3>
             <p className="mt-2 text-sm leading-relaxed text-zinc-400">
               Crie, edite e delete seus links favoritos de forma simples.
-            </p>
-          </div>
-
-          <div className="glass rounded-2xl p-6 text-left transition-all hover:border-cyan-500/20">
-            <div className="mb-4 inline-flex rounded-xl bg-cyan-500/10 p-3">
-              <Shield className="h-6 w-6 text-cyan-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-white">Segurança</h3>
-            <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-              Autenticação segura com cookies HTTPOnly e tokens JWT.
             </p>
           </div>
 
@@ -132,7 +122,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="relative z-10 border-t border-white/5 px-6 py-6 text-center text-sm text-zinc-500">
-        © 2026 MyLinks. Feito com 💜
+        © 2026 MyLinks.
       </footer>
     </div>
   );
