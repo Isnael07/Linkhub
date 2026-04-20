@@ -1,26 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { BASE_URL } from "@/lib/api";
-
-async function getToken() {
-    const cookieStore = await cookies();
-    return cookieStore.get("accessToken")?.value;
-}
+import { requireAuth, requireOwnership } from "@/lib/auth";
 
 // GET /api/links?userId=xxx — fetch links by user
 export async function GET(req: NextRequest) {
-    const token = await getToken();
-    if (!token) {
-        return NextResponse.json({ message: "Não autenticado" }, { status: 401 });
-    }
-
     const userId = req.nextUrl.searchParams.get("userId");
     if (!userId) {
         return NextResponse.json({ message: "userId obrigatório" }, { status: 400 });
     }
 
+    const auth = await requireOwnership(userId);
+    if (auth.error) return auth.error;
+
     const backendRes = await fetch(`${BASE_URL}/links/users/${userId}/links`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${auth.token}` },
     });
 
     if (!backendRes.ok) {
@@ -36,18 +29,21 @@ export async function GET(req: NextRequest) {
 
 // POST /api/links — create link
 export async function POST(req: NextRequest) {
-    const token = await getToken();
-    if (!token) {
-        return NextResponse.json({ message: "Não autenticado" }, { status: 401 });
-    }
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
 
     const body = await req.json();
+
+    // IDOR protection: only allow creating links for own user
+    if (body.userId && auth.userId !== body.userId) {
+        return NextResponse.json({ message: "Acesso negado" }, { status: 403 });
+    }
 
     const backendRes = await fetch(`${BASE_URL}/links`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${auth.token}`,
         },
         body: JSON.stringify(body),
     });

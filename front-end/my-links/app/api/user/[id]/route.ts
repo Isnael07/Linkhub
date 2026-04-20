@@ -1,26 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { BASE_URL } from "@/lib/api";
-
-async function getToken() {
-    const cookieStore = await cookies();
-    return cookieStore.get("accessToken")?.value;
-}
+import { requireOwnership } from "@/lib/auth";
 
 // GET /api/user/[id] — fetch user profile
 export async function GET(
     req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const token = await getToken();
-    if (!token) {
-        return NextResponse.json({ message: "Não autenticado" }, { status: 401 });
-    }
-
     const { id } = await params;
+    const auth = await requireOwnership(id);
+    if (auth.error) return auth.error;
 
     const backendRes = await fetch(`${BASE_URL}/user/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${auth.token}` },
     });
 
     if (!backendRes.ok) {
@@ -39,19 +32,17 @@ export async function PATCH(
     req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const token = await getToken();
-    if (!token) {
-        return NextResponse.json({ message: "Não autenticado" }, { status: 401 });
-    }
-
     const { id } = await params;
+    const auth = await requireOwnership(id);
+    if (auth.error) return auth.error;
+
     const body = await req.json();
 
     const backendRes = await fetch(`${BASE_URL}/user/${id}`, {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${auth.token}`,
         },
         body: JSON.stringify(body),
     });
@@ -74,16 +65,13 @@ export async function DELETE(
     req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const token = await getToken();
-    if (!token) {
-        return NextResponse.json({ message: "Não autenticado" }, { status: 401 });
-    }
-
     const { id } = await params;
+    const auth = await requireOwnership(id);
+    if (auth.error) return auth.error;
 
     const backendRes = await fetch(`${BASE_URL}/user/${id}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${auth.token}` },
     });
 
     if (!backendRes.ok) {
