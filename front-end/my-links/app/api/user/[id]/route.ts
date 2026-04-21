@@ -1,30 +1,21 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
-import { BASE_URL } from "@/lib/api";
 import { requireOwnership } from "@/lib/auth";
+import { proxyBackendRequest } from "@/lib/serverProxy";
 
 // GET /api/user/[id] — fetch user profile
 export async function GET(
-    req: NextRequest,
+    _req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     const { id } = await params;
     const auth = await requireOwnership(id);
     if (auth.error) return auth.error;
 
-    const backendRes = await fetch(`${BASE_URL}/user/${id}`, {
-        headers: { Authorization: `Bearer ${auth.token}` },
+    return proxyBackendRequest(`/user/${id}`, {
+        token: auth.token,
+        defaultErrorMessage: "Erro ao buscar perfil"
     });
-
-    if (!backendRes.ok) {
-        return NextResponse.json(
-            { message: "Erro ao buscar perfil" },
-            { status: backendRes.status }
-        );
-    }
-
-    const data = await backendRes.json();
-    return NextResponse.json(data);
 }
 
 // PATCH /api/user/[id] — update user profile
@@ -36,55 +27,36 @@ export async function PATCH(
     const auth = await requireOwnership(id);
     if (auth.error) return auth.error;
 
-    const body = await req.json();
+    const body = await req.text();
 
-    const backendRes = await fetch(`${BASE_URL}/user/${id}`, {
+    return proxyBackendRequest(`/user/${id}`, {
         method: "PATCH",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${auth.token}`,
-        },
-        body: JSON.stringify(body),
+        body,
+        token: auth.token,
+        defaultErrorMessage: "Erro ao atualizar perfil"
     });
-
-    if (!backendRes.ok) {
-        let message = "Erro ao atualizar perfil";
-        try {
-            const err = await backendRes.json();
-            if (err?.message) message = err.message;
-        } catch { }
-        return NextResponse.json({ message }, { status: backendRes.status });
-    }
-
-    const data = await backendRes.json();
-    return NextResponse.json(data);
 }
 
 // DELETE /api/user/[id] — delete user account
 export async function DELETE(
-    req: NextRequest,
+    _req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     const { id } = await params;
     const auth = await requireOwnership(id);
     if (auth.error) return auth.error;
 
-    const backendRes = await fetch(`${BASE_URL}/user/${id}`, {
+    const response = await proxyBackendRequest(`/user/${id}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${auth.token}` },
+        token: auth.token,
+        defaultErrorMessage: "Erro ao deletar conta"
     });
 
-    if (!backendRes.ok) {
-        return NextResponse.json(
-            { message: "Erro ao deletar conta" },
-            { status: backendRes.status }
-        );
+    if (response.ok) {
+        const cookieStore = await cookies();
+        cookieStore.delete("accessToken");
+        cookieStore.delete("refreshToken");
     }
 
-    // Also clear auth cookies
-    const cookieStore = await cookies();
-    cookieStore.delete("accessToken");
-    cookieStore.delete("refreshToken");
-
-    return NextResponse.json({ success: true });
+    return response;
 }

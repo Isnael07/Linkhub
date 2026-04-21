@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { BASE_URL } from "@/lib/api";
 import { requireAuth, requireOwnership } from "@/lib/auth";
+import { proxyBackendRequest } from "@/lib/serverProxy";
 
 // GET /api/links?userId=xxx — fetch links by user
 export async function GET(req: NextRequest) {
@@ -12,19 +12,10 @@ export async function GET(req: NextRequest) {
     const auth = await requireOwnership(userId);
     if (auth.error) return auth.error;
 
-    const backendRes = await fetch(`${BASE_URL}/links/users/${userId}/links`, {
-        headers: { Authorization: `Bearer ${auth.token}` },
+    return proxyBackendRequest(`/links/users/${userId}/links`, {
+        token: auth.token,
+        defaultErrorMessage: "Erro ao buscar links"
     });
-
-    if (!backendRes.ok) {
-        return NextResponse.json(
-            { message: "Erro ao buscar links" },
-            { status: backendRes.status }
-        );
-    }
-
-    const data = await backendRes.json();
-    return NextResponse.json(data);
 }
 
 // POST /api/links — create link
@@ -32,31 +23,18 @@ export async function POST(req: NextRequest) {
     const auth = await requireAuth();
     if (auth.error) return auth.error;
 
-    const body = await req.json();
+    const body = await req.text();
 
     // IDOR protection: only allow creating links for own user
-    if (body.userId && auth.userId !== body.userId) {
+    const parsedBody = JSON.parse(body);
+    if (parsedBody.userId && auth.userId !== parsedBody.userId) {
         return NextResponse.json({ message: "Acesso negado" }, { status: 403 });
     }
 
-    const backendRes = await fetch(`${BASE_URL}/links`, {
+    return proxyBackendRequest("/links", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${auth.token}`,
-        },
-        body: JSON.stringify(body),
+        body,
+        token: auth.token,
+        defaultErrorMessage: "Erro ao criar link"
     });
-
-    if (!backendRes.ok) {
-        let message = "Erro ao criar link";
-        try {
-            const err = await backendRes.json();
-            if (err?.message) message = err.message;
-        } catch { }
-        return NextResponse.json({ message }, { status: backendRes.status });
-    }
-
-    const data = await backendRes.json();
-    return NextResponse.json(data);
 }
