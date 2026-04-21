@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { BASE_URL } from "@/lib/api";
-import { getToken, decodeJwtPayload } from "@/lib/auth";
+import { getToken, verifyJwt } from "@/lib/auth";
 
 export async function GET() {
     const accessToken = await getToken();
@@ -9,7 +9,7 @@ export async function GET() {
         return NextResponse.json({ authenticated: false }, { status: 401 });
     }
 
-    const payload = decodeJwtPayload(accessToken);
+    const payload = await verifyJwt(accessToken);
     if (!payload || !payload.sub) {
         return NextResponse.json({ authenticated: false }, { status: 401 });
     }

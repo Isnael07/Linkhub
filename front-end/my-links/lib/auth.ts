@@ -1,5 +1,27 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { jwtVerify } from "jose";
+
+/** Expected shape of the JWT payload after verification. */
+interface JwtPayload {
+    sub: string;
+    roles?: string[];
+    iss?: string;
+    iat?: number;
+    exp?: number;
+}
+
+/**
+ * Returns the HMAC secret key used to verify JWTs.
+ * Must match the same JWT_SECRET used by the Spring Boot backend.
+ */
+function getJwtSecret(): Uint8Array {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+        throw new Error("JWT_SECRET environment variable is not set");
+    }
+    return new TextEncoder().encode(secret);
+}
 
 /**
  * Extracts the accessToken from HTTPOnly cookies.
@@ -10,14 +32,16 @@ export async function getToken(): Promise<string | undefined> {
 }
 
 /**
- * Decodes a JWT payload WITHOUT verifying the signature.
- * Used only to extract claims like `sub` for ownership checks.
+ * Verifies a JWT signature (HS256) and returns the payload.
+ * Returns null if the token is invalid, expired, or tampered with.
  */
-export function decodeJwtPayload(token: string): Record<string, unknown> | null {
+export async function verifyJwt(token: string): Promise<JwtPayload | null> {
     try {
-        const base64 = token.split(".")[1];
-        const json = Buffer.from(base64, "base64").toString("utf-8");
-        return JSON.parse(json);
+        const { payload } = await jwtVerify(token, getJwtSecret(), {
+            algorithms: ["HS256"],
+        });
+        if (!payload.sub) return null;
+        return payload as unknown as JwtPayload;
     } catch {
         return null;
     }
@@ -25,13 +49,13 @@ export function decodeJwtPayload(token: string): Record<string, unknown> | null 
 
 /**
  * Returns the authenticated user's ID (JWT `sub` claim) or null.
- * Combines getToken + decode in a single call.
+ * Combines getToken + signature verification in a single call.
  */
 export async function getAuthenticatedUserId(): Promise<string | null> {
     const token = await getToken();
     if (!token) return null;
 
-    const payload = decodeJwtPayload(token);
+    const payload = await verifyJwt(token);
     if (!payload || typeof payload.sub !== "string") return null;
 
     return payload.sub;
@@ -47,13 +71,16 @@ type AuthResult =
  */
 export async function requireAuth(): Promise<AuthResult> {
     const token = await getToken();
-    const userId = await getAuthenticatedUserId();
-
-    if (!token || !userId) {
+    if (!token) {
         return { error: NextResponse.json({ message: "Não autenticado" }, { status: 401 }) };
     }
 
-    return { token, userId };
+    const payload = await verifyJwt(token);
+    if (!payload || typeof payload.sub !== "string") {
+        return { error: NextResponse.json({ message: "Token inválido" }, { status: 401 }) };
+    }
+
+    return { token, userId: payload.sub };
 }
 
 /**
