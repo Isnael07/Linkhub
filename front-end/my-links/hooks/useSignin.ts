@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signinSchema, SigninFormData } from "@/schemas/sigininSchema";
 import { useAuth } from "@/contexts/AuthContext";
+import { handleFormError } from "@/lib/formUtils";
 
 export function useSignin() {
   const { login } = useAuth();
@@ -24,13 +25,7 @@ export function useSignin() {
       await login(data.email, data.password);
       setSuccess("Login realizado com sucesso!");
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Erro inesperado.";
-
-      setError("root.serverError", {
-        type: "server",
-        message,
-      });
+      handleFormError(err, setError);
     }
   };
 
