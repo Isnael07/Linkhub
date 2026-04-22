@@ -13,5 +13,11 @@ export async function apiFetch(
     },
     credentials: "include",
   });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => null);
+    throw new Error(err?.message || "Erro inesperado na requisição");
+  }
+
   return res;
 }

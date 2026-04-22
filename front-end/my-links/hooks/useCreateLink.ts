@@ -4,6 +4,8 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { LinkFormData } from "@/schemas/linkSchema";
 import { useAuth } from "@/contexts/AuthContext";
+import { apiFetch } from "@/lib/api";
+import { handleFormError } from "@/lib/formUtils";
 
 export function useCreateLink(onSuccess?: () => void) {
   const { user } = useAuth();
@@ -30,32 +32,19 @@ export function useCreateLink(onSuccess?: () => void) {
         throw new Error("Usuário não autenticado.");
       }
 
-      const res = await fetch("/api/links", {
+      await apiFetch("/links", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           ...data,
           userId: user.userId,
         }),
       });
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => null);
-        throw new Error(err?.message || "Erro ao criar link");
-      }
-
       setSuccess("Link cadastrado com sucesso!");
       reset();
       onSuccess?.();
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Erro inesperado.";
-
-      setError("root.serverError", {
-        type: "server",
-        message,
-      });
+      handleFormError(err, setError);
     }
   }
 

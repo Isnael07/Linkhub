@@ -1,26 +1,15 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { BASE_URL } from "@/lib/api";
-
-function decodeJwtPayload(token: string) {
-    try {
-        const base64 = token.split(".")[1];
-        const json = Buffer.from(base64, "base64").toString("utf-8");
-        return JSON.parse(json);
-    } catch {
-        return null;
-    }
-}
+import { getToken, verifyJwt } from "@/lib/auth";
 
 export async function GET() {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
+    const accessToken = await getToken();
 
     if (!accessToken) {
         return NextResponse.json({ authenticated: false }, { status: 401 });
     }
 
-    const payload = decodeJwtPayload(accessToken);
+    const payload = await verifyJwt(accessToken);
     if (!payload || !payload.sub) {
         return NextResponse.json({ authenticated: false }, { status: 401 });
     }
