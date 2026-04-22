@@ -36,8 +36,9 @@ export async function getToken(): Promise<string | undefined> {
  * Returns null if the token is invalid, expired, or tampered with.
  */
 export async function verifyJwt(token: string): Promise<JwtPayload | null> {
+    const secret = getJwtSecret();
     try {
-        const { payload } = await jwtVerify(token, getJwtSecret(), {
+        const { payload } = await jwtVerify(token, secret, {
             algorithms: ["HS256"],
         });
         if (!payload.sub) return null;
