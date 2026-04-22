@@ -40,6 +40,8 @@ export async function verifyJwt(token: string): Promise<JwtPayload | null> {
     try {
         const { payload } = await jwtVerify(token, secret, {
             algorithms: ["HS256"],
+            issuer: "links-hub-v0",
+            audience: "links-hub-api",
         });
         if (!payload.sub) return null;
         return payload as unknown as JwtPayload;
