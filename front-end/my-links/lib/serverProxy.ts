@@ -87,8 +87,20 @@ export async function proxyBackendRequest(
     const headers = prepareHeaders(fetchOptions, token);
     const url = `${BASE_URL}${path.startsWith("/") ? path : "/" + path}`;
     
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+    if (fetchOptions.signal) {
+        if (fetchOptions.signal.aborted) {
+            controller.abort();
+        } else {
+            fetchOptions.signal.addEventListener("abort", () => controller.abort(), { once: true });
+        }
+    }
+
     try {
-        const backendRes = await fetch(url, { ...fetchOptions, headers });
+        const backendRes = await fetch(url, { ...fetchOptions, headers, signal: controller.signal });
+        clearTimeout(timeoutId);
 
         if (!backendRes.ok) {
             return handleErrorResponse(backendRes, defaultErrorMessage, customErrorMapper);
@@ -96,10 +108,13 @@ export async function proxyBackendRequest(
 
         return handleSuccessResponse(backendRes);
     } catch (error) {
+        clearTimeout(timeoutId);
         console.error("[proxyBackendRequest] Erro de conexão com o backend:", error);
+        
+        const isTimeout = (error as Error).name === "AbortError" && !fetchOptions.signal?.aborted;
         return NextResponse.json(
-            { message: "Erro de conexão com o backend" },
-            { status: 503 }
+            { message: isTimeout ? "Tempo limite de requisição excedido" : "Erro de conexão com o backend" },
+            { status: isTimeout ? 504 : 503 }
         );
     }
 }
