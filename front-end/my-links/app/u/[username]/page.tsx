@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { PublicLinkCard } from "@/components/PublicLinkCard";
 import { Link2, Loader2, UserCircle, LinkIcon } from "lucide-react";
-import { apiFetch } from "@/lib/api";
+import { apiJson } from "@/lib/api";
 import Link from "next/link";
 
 type LinkItem = {
@@ -28,9 +28,8 @@ export default function PublicUserLinksPage() {
             setIsLoading(true);
             setError(null);
             try {
-                const res = await apiFetch(`/links/public/${username}`);
-                const data = await res.json();
-                setLinks(data);
+                const data = await apiJson<LinkItem[]>(`/links/public/${username}`);
+                setLinks(data || []);
             } catch (err) {
                 const message = err instanceof Error ? err.message : "Erro ao carregar os links.";
                 setError(message);
