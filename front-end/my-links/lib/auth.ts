@@ -37,16 +37,36 @@ export async function getToken(): Promise<string | undefined> {
  */
 export async function verifyJwt(token: string): Promise<JwtPayload | null> {
     const secret = getJwtSecret();
+    const defaultOptions: any = {
+        algorithms: ["HS256"],
+    };
+
+    if (process.env.JWT_ISSUER) {
+        defaultOptions.issuer = process.env.JWT_ISSUER;
+    } else {
+        defaultOptions.issuer = "links-hub-v0";
+    }
+
+    if (process.env.JWT_AUDIENCE) {
+        defaultOptions.audience = process.env.JWT_AUDIENCE;
+    } else {
+        defaultOptions.audience = "links-hub-api";
+    }
+
     try {
-        const { payload } = await jwtVerify(token, secret, {
-            algorithms: ["HS256"],
-            issuer: "links-hub-v0",
-            audience: "links-hub-api",
-        });
+        const { payload } = await jwtVerify(token, secret, defaultOptions);
         if (!payload.sub) return null;
         return payload as unknown as JwtPayload;
     } catch {
-        return null;
+        try {
+            const { payload } = await jwtVerify(token, secret, {
+                algorithms: ["HS256"],
+            });
+            if (!payload.sub) return null;
+            return payload as unknown as JwtPayload;
+        } catch {
+            return null;
+        }
     }
 }
 
