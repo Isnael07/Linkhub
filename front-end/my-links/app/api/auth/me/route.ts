@@ -10,7 +10,7 @@ export async function GET() {
     }
 
     const payload = await verifyJwt(accessToken);
-    if (!payload || !payload.sub) {
+    if (!payload?.sub) {
         return NextResponse.json({ authenticated: false }, { status: 401 });
     }
 
