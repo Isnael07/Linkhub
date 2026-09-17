@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, apiJson } from "@/lib/api";
 
 type Profile = {
     id: string;
@@ -22,9 +22,8 @@ export function useProfile() {
         setError(null);
 
         try {
-            const res = await apiFetch(`/user/${user.userId}`);
-            const data = await res.json();
-            setProfile(data);
+            const data = await apiJson<Profile>(`/user/${user.userId}`);
+            setProfile(data || null);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Erro inesperado");
         } finally {
@@ -35,12 +34,10 @@ export function useProfile() {
     const updateProfile = async (data: { username?: string; password?: string }) => {
         if (!user) throw new Error("Não autenticado");
 
-        const res = await apiFetch(`/user/${user.userId}`, {
+        const updated = await apiJson<Profile>(`/user/${user.userId}`, {
             method: "PATCH",
             body: JSON.stringify(data),
         });
-
-        const updated = await res.json();
         setProfile(updated);
         await refreshUser();
         return updated;
