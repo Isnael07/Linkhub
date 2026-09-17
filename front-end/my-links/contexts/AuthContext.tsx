@@ -10,7 +10,7 @@ import {
     type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, apiJson } from "@/lib/api";
 
 type User = {
     userId: string;
@@ -24,7 +24,7 @@ type AuthContextType = {
     isLoading: boolean;
     login: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
-    refreshUser: () => Promise<void>;
+    refreshUser: () => Promise<boolean>;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -35,21 +35,22 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
     const router = useRouter();
 
     const refreshUser = useCallback(async () => {
-        try {
-            const res = await apiFetch("/auth/me");
-            const data = await res.json();
-            if (data.authenticated) {
-                setUser({
-                    userId: data.userId,
-                    username: data.username,
-                    email: data.email,
-                });
-                return;
+            try {
+                const data = await apiJson<{ authenticated?: boolean; userId?: string; username?: string | null; email?: string | null }>("/auth/me");
+                if (data?.authenticated) {
+                    setUser({
+                        userId: data.userId as string,
+                        username: data.username ?? null,
+                        email: data.email ?? null,
+                    });
+                    return true;
+                }
+                setUser(null);
+                return false;
+            } catch {
+                setUser(null);
+                return false;
             }
-            setUser(null);
-        } catch {
-            setUser(null);
-        }
     }, []);
 
     useEffect(() => {
@@ -62,7 +63,11 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
             body: JSON.stringify({ email, password }),
         });
 
-        await refreshUser();
+        const authenticated = await refreshUser();
+        if (!authenticated) {
+            throw new Error("Falha ao autenticar");
+        }
+
         router.push("/dashboard");
     }, [refreshUser, router]);
 
