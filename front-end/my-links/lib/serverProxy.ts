@@ -2,18 +2,22 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { BASE_URL } from "@/lib/api";
 
+export type BackendErrorBody = {
+    message?: string;
+} & Record<string, unknown>;
+
 export type ProxyOptions = RequestInit & {
     token?: string; // Optional token to override cookie
     skipAuth?: boolean;
     requireAuth?: boolean; // Return 401 early if no token is found
     defaultErrorMessage?: string;
-    customErrorMapper?: (status: number, errBody: any) => NextResponse | null;
+    customErrorMapper?: (status: number, errBody: BackendErrorBody | null) => NextResponse | null;
 };
 
-async function getAuthToken(options: ProxyOptions): Promise<string | undefined> {
-    if (options.token) return options.token;
-    if (options.skipAuth) return undefined;
-    
+async function getAuthToken(token?: string, skipAuth?: boolean): Promise<string | undefined> {
+    if (token) return token;
+    if (skipAuth) return undefined;
+
     const cookieStore = await cookies();
     return cookieStore.get("accessToken")?.value;
 }
@@ -38,14 +42,9 @@ function prepareHeaders(fetchOptions: RequestInit, token?: string): Headers {
 async function handleErrorResponse(
     backendRes: Response,
     defaultErrorMessage: string,
-    customErrorMapper?: (status: number, errBody: any) => NextResponse | null
+    customErrorMapper?: (status: number, errBody: BackendErrorBody | null) => NextResponse | null
 ): Promise<NextResponse> {
-    let errBody: any = null;
-    try {
-        errBody = await backendRes.json();
-    } catch { 
-        // ignore parse errors
-    }
+    const errBody: BackendErrorBody | null = await backendRes.json().catch(() => null);
 
     if (customErrorMapper) {
         const mappedResponse = customErrorMapper(backendRes.status, errBody);
@@ -69,22 +68,22 @@ export async function proxyBackendRequest(
     path: string,
     options: ProxyOptions = {}
 ) {
-    const { 
-        token: _providedToken, 
-        skipAuth: _skipAuth, 
+    const {
+        token,
+        skipAuth,
         requireAuth,
-        defaultErrorMessage = "Erro no servidor", 
+        defaultErrorMessage = "Erro no servidor",
         customErrorMapper,
-        ...fetchOptions 
+        ...fetchOptions
     } = options;
-    
-    const token = await getAuthToken(options);
-    
-    if (requireAuth && !token && !options.skipAuth) {
+
+    const authToken = await getAuthToken(token, skipAuth);
+
+    if (requireAuth && !authToken && !skipAuth) {
         return NextResponse.json({ message: "Não autenticado" }, { status: 401 });
     }
 
-    const headers = prepareHeaders(fetchOptions, token);
+    const headers = prepareHeaders(fetchOptions, authToken);
     const url = `${BASE_URL}${path.startsWith("/") ? path : "/" + path}`;
     
     const controller = new AbortController();
