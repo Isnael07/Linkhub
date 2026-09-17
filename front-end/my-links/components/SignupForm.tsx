@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useSignup } from "@/hooks/userSignup";
+import { useSignup } from "@/hooks/useSignup";
 
 export function SignupForm() {
   const {
@@ -70,9 +70,7 @@ export function SignupForm() {
         </p>
       )}
 
-      {success && (
-        <p className="text-sm text-emerald-400">{success}</p>
-      )}
+      {success && <p className="text-sm text-emerald-400">{success}</p>}
 
       <Button
         type="submit"

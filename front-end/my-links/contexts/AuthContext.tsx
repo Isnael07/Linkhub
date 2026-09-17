@@ -6,9 +6,11 @@ import {
     useState,
     useEffect,
     useCallback,
+    useMemo,
     type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
+import { apiFetch, apiJson } from "@/lib/api";
 
 type User = {
     userId: string;
@@ -22,77 +24,75 @@ type AuthContextType = {
     isLoading: boolean;
     login: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
-    refreshUser: () => Promise<void>;
+    refreshUser: () => Promise<boolean>;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: { readonly children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
     const refreshUser = useCallback(async () => {
-        try {
-            const res = await fetch("/api/auth/me", { credentials: "include" });
-            if (res.ok) {
-                const data = await res.json();
-                if (data.authenticated) {
+            try {
+                const data = await apiJson<{ authenticated?: boolean; userId?: string; username?: string | null; email?: string | null }>("/auth/me");
+                if (data?.authenticated) {
                     setUser({
-                        userId: data.userId,
-                        username: data.username,
-                        email: data.email,
+                        userId: data.userId as string,
+                        username: data.username ?? null,
+                        email: data.email ?? null,
                     });
-                    return;
+                    return true;
                 }
+                setUser(null);
+                return false;
+            } catch {
+                setUser(null);
+                return false;
             }
-            setUser(null);
-        } catch {
-            setUser(null);
-        }
     }, []);
 
     useEffect(() => {
         refreshUser().finally(() => setIsLoading(false));
     }, [refreshUser]);
 
-    const login = async (email: string, password: string) => {
-        const res = await fetch("/api/auth/login", {
+    const login = useCallback(async (email: string, password: string) => {
+        await apiFetch("/auth/login", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password }),
-            credentials: "include",
         });
 
-        if (!res.ok) {
-            const data = await res.json().catch(() => null);
-            throw new Error(data?.message || "Credenciais inválidas");
+        const authenticated = await refreshUser();
+        if (!authenticated) {
+            throw new Error("Falha ao autenticar");
         }
 
-        await refreshUser();
         router.push("/dashboard");
-    };
+    }, [refreshUser, router]);
 
-    const logout = async () => {
-        await fetch("/api/auth/logout", {
+    const logout = useCallback(async () => {
+        await apiFetch("/auth/logout", {
             method: "POST",
-            credentials: "include",
         });
         setUser(null);
         router.push("/");
-    };
+    }, [router]);
+
+    const contextValue = useMemo(
+        () => ({
+            user,
+            isAuthenticated: !!user,
+            isLoading,
+            login,
+            logout,
+            refreshUser,
+        }),
+        [user, isLoading, login, logout, refreshUser]
+    );
 
     return (
-        <AuthContext.Provider
-            value={{
-                user,
-                isAuthenticated: !!user,
-                isLoading,
-                login,
-                logout,
-                refreshUser,
-            }}
-        >
+        <AuthContext.Provider value={contextValue}>
             {children}
         </AuthContext.Provider>
     );

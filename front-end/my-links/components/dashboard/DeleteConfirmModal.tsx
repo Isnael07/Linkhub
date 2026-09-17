@@ -8,7 +8,7 @@ type DeleteConfirmModalProps = {
     onCancel: () => void;
 };
 
-export function DeleteConfirmModal({ isOpen, onConfirm, onCancel }: DeleteConfirmModalProps) {
+export function DeleteConfirmModal({ isOpen, onConfirm, onCancel }: Readonly<DeleteConfirmModalProps>) {
     if (!isOpen) return null;
 
     return (

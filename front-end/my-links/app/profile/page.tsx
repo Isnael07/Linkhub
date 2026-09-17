@@ -11,12 +11,12 @@ import { Button } from "@/components/ui/button";
 import { Loader2, User, Mail, Shield, Trash2 } from "lucide-react";
 
 export default function ProfilePage() {
-    const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+    const {isAuthenticated, isLoading: authLoading } = useAuth();
     const router = useRouter();
     const { profile, isLoading, fetchProfile, updateProfile, deleteAccount } =
         useProfile();
 
-    const [username, setUsername] = useState("");
+    const [username, setUsername] = useState<string | undefined>(undefined);
     const [password, setPassword] = useState("");
     const [isUpdating, setIsUpdating] = useState(false);
     const [updateSuccess, setUpdateSuccess] = useState("");
@@ -35,13 +35,7 @@ export default function ProfilePage() {
         }
     }, [isAuthenticated, fetchProfile]);
 
-    useEffect(() => {
-        if (profile) {
-            setUsername(profile.username);
-        }
-    }, [profile]);
-
-    const handleUpdate = async (e: React.FormEvent) => {
+    const handleUpdate = async (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
         e.preventDefault();
         setUpdateSuccess("");
         setUpdateError("");
@@ -49,7 +43,8 @@ export default function ProfilePage() {
 
         try {
             const data: { username?: string; password?: string } = {};
-            if (username !== profile?.username) data.username = username;
+            const effectiveUsername = username ?? profile?.username ?? "";
+            if (effectiveUsername !== profile?.username) data.username = effectiveUsername;
             if (password) data.password = password;
 
             if (Object.keys(data).length === 0) {
@@ -136,7 +131,7 @@ export default function ProfilePage() {
                             </Label>
                             <Input
                                 id="username"
-                                value={username}
+                                value={username ?? profile?.username ?? ""}
                                 onChange={(e) => setUsername(e.target.value)}
                                 className="border-white/10 bg-zinc-800 text-white placeholder:text-zinc-500 focus:border-violet-500"
                             />
