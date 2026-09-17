@@ -1,20 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAuth, requireOwnership } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth";
 import { proxyBackendRequest } from "@/lib/serverProxy";
 
-// GET /api/links?userId=xxx — fetch links by user
-export async function GET(req: NextRequest) {
-    const userId = req.nextUrl.searchParams.get("userId");
-    if (!userId) {
-        return NextResponse.json({ message: "userId obrigatório" }, { status: 400 });
-    }
-
-    const auth = await requireOwnership(userId);
+// GET /api/links — fetch links for authenticated user
+export async function GET() {
+    const auth = await requireAuth();
     if (auth.error) return auth.error;
 
-    return proxyBackendRequest(`/links/users/${userId}/links`, {
+    return proxyBackendRequest("/links", {
         token: auth.token,
-        defaultErrorMessage: "Erro ao buscar links"
+        defaultErrorMessage: "Erro ao buscar links",
     });
 }
 
