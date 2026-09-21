@@ -9,6 +9,7 @@ interface JwtPayload {
     iss?: string;
     iat?: number;
     exp?: number;
+    aud?: string | string[];
 }
 
 /**
@@ -17,9 +18,11 @@ interface JwtPayload {
  */
 function getJwtSecret(): Uint8Array {
     const secret = process.env.JWT_SECRET;
+
     if (!secret) {
         throw new Error("JWT_SECRET environment variable is not set");
     }
+
     return new TextEncoder().encode(secret);
 }
 
@@ -28,45 +31,38 @@ function getJwtSecret(): Uint8Array {
  */
 export async function getToken(): Promise<string | undefined> {
     const cookieStore = await cookies();
+
     return cookieStore.get("accessToken")?.value;
 }
 
 /**
- * Verifies a JWT signature (HS256) and returns the payload.
- * Returns null if the token is invalid, expired, or tampered with.
+ * Verifies a JWT using HS256, issuer and audience.
+ *
+ * The issuer and audience are mandatory.
+ * There is intentionally no fallback verification without them.
  */
-export async function verifyJwt(token: string): Promise<JwtPayload | null> {
+export async function verifyJwt(
+    token: string
+): Promise<JwtPayload | null> {
     const secret = getJwtSecret();
-    const defaultOptions: any = {
-        algorithms: ["HS256"],
-    };
 
-    if (process.env.JWT_ISSUER) {
-        defaultOptions.issuer = process.env.JWT_ISSUER;
-    } else {
-        defaultOptions.issuer = "links-hub-v0";
-    }
-
-    if (process.env.JWT_AUDIENCE) {
-        defaultOptions.audience = process.env.JWT_AUDIENCE;
-    } else {
-        defaultOptions.audience = "links-hub-api";
-    }
+    const issuer = process.env.JWT_ISSUER ?? "links-hub-v0";
+    const audience = process.env.JWT_AUDIENCE ?? "links-hub-v0";
 
     try {
-        const { payload } = await jwtVerify(token, secret, defaultOptions);
-        if (!payload.sub) return null;
-        return payload as unknown as JwtPayload;
-    } catch {
-        try {
-            const { payload } = await jwtVerify(token, secret, {
-                algorithms: ["HS256"],
-            });
-            if (!payload.sub) return null;
-            return payload as unknown as JwtPayload;
-        } catch {
+        const { payload } = await jwtVerify(token, secret, {
+            algorithms: ["HS256"],
+            issuer,
+            audience,
+        });
+
+        if (!payload.sub) {
             return null;
         }
+
+        return payload as JwtPayload;
+    } catch {
+        return null;
     }
 }
 
