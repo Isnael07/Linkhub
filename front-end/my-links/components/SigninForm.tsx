@@ -2,6 +2,8 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSignin } from "@/hooks/useSignin";
 
@@ -14,6 +16,8 @@ export function SigninForm() {
     success,
     onSubmit,
   } = useSignin();
+
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -37,13 +41,28 @@ export function SigninForm() {
         <Label htmlFor="password" className="text-zinc-300">
           Senha
         </Label>
-        <Input
-          id="password"
-          type="password"
-          placeholder="••••••••"
-          {...register("password")}
-          className="border-white/10 bg-zinc-800 text-white placeholder:text-zinc-500 focus:border-violet-500"
-        />
+        <div className="relative">
+          <Input
+            id="password"
+            type={showPassword ? "text" : "password"}
+            placeholder="••••••••"
+            {...register("password")}
+            className="border-white/10 bg-zinc-800 pr-10 text-white placeholder:text-zinc-500 focus:border-violet-500"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute inset-y-0 right-0 flex items-center px-3 text-zinc-400 transition-colors hover:text-white focus:outline-none"
+            aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+            tabIndex={-1}
+          >
+            {showPassword ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+          </button>
+        </div>
         {errors.password && (
           <p className="text-sm text-red-400">{errors.password.message}</p>
         )}
