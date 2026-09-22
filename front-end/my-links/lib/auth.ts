@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { jwtVerify } from "jose";
+import { refreshTokens } from "@/lib/refresh";
 
 /** Expected shape of the JWT payload after verification. */
 interface JwtPayload {
@@ -80,6 +81,21 @@ export async function getAuthenticatedUserId(): Promise<string | null> {
     return payload.sub;
 }
 
+/**
+ * Returns a valid access token, refreshing it automatically when the
+ * stored one is missing or expired and a refresh token is available.
+ * Returns null when there is no valid token and refresh fails.
+ */
+export async function getValidAccessToken(): Promise<string | null> {
+    const token = await getToken();
+    if (token && (await verifyJwt(token))) return token;
+
+    const refreshed = await refreshTokens();
+    if (!refreshed) return null;
+
+    return (await getToken()) ?? null;
+}
+
 type AuthResult =
     | { token: string; userId: string; error?: never }
     | { token?: never; userId?: never; error: NextResponse };
@@ -89,7 +105,7 @@ type AuthResult =
  * Returns `{ token, userId }` on success, or `{ error: NextResponse }` on failure.
  */
 export async function requireAuth(): Promise<AuthResult> {
-    const token = await getToken();
+    const token = await getValidAccessToken();
     if (!token) {
         return { error: NextResponse.json({ message: "Não autenticado" }, { status: 401 }) };
     }
