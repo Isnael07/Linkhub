@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { BASE_URL } from "@/lib/api";
+import { getToken, verifyJwt } from "@/lib/auth";
+import { refreshTokens } from "@/lib/refresh";
 
 export type BackendErrorBody = {
     message?: string;
@@ -77,7 +79,13 @@ export async function proxyBackendRequest(
         ...fetchOptions
     } = options;
 
-    const authToken = await getAuthToken(token, skipAuth);
+    let authToken = await getAuthToken(token, skipAuth);
+
+    // Token present but expired/invalid → try to refresh before proxying
+    if (authToken && !(await verifyJwt(authToken))) {
+        const refreshed = await refreshTokens();
+        authToken = refreshed ? (await getToken()) : undefined;
+    }
 
     if (requireAuth && !authToken && !skipAuth) {
         return NextResponse.json({ message: "Não autenticado" }, { status: 401 });
