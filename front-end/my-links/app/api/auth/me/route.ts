@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { BASE_URL } from "@/lib/api";
-import { getToken, verifyJwt } from "@/lib/auth";
+import { getValidAccessToken, verifyJwt } from "@/lib/auth";
 
 export async function GET() {
-    const accessToken = await getToken();
+    const accessToken = await getValidAccessToken();
 
     if (!accessToken) {
         return NextResponse.json({ authenticated: false }, { status: 401 });
