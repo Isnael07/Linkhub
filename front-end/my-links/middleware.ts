@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyJwt } from "@/lib/auth";
+import { callBackendRefresh, setTokenCookies } from "@/lib/refresh";
 
 // Routes that require authentication
 const PROTECTED_PATHS = ["/dashboard", "/profile"];
@@ -50,11 +51,34 @@ export async function middleware(req: NextRequest) {
     }
 
     // --- Route protection for pages ---
-    const token = req.cookies.get("accessToken")?.value;
+    const accessToken = req.cookies.get("accessToken")?.value;
+    const refreshToken = req.cookies.get("refreshToken")?.value;
     const isProtected = PROTECTED_PATHS.some((p) => pathname.startsWith(p));
     const isAuthPage = AUTH_PAGES.some((p) => pathname.startsWith(p));
 
-    const isTokenValid = token ? Boolean(await verifyJwt(token)) : false;
+    let isTokenValid = accessToken ? Boolean(await verifyJwt(accessToken)) : false;
+
+    // Access token expired/invalid but a refresh token exists → try to renew
+    if (!isTokenValid && refreshToken) {
+        const tokens = await callBackendRefresh(refreshToken);
+        if (tokens) {
+            const res = NextResponse.next();
+            setTokenCookies(res.cookies, tokens);
+            isTokenValid = Boolean(await verifyJwt(tokens.accessToken));
+
+            if (isProtected && isTokenValid) {
+                return res;
+            }
+
+            if (isAuthPage && isTokenValid) {
+                const redirect = NextResponse.redirect(new URL("/dashboard", req.url));
+                setTokenCookies(redirect.cookies, tokens);
+                return redirect;
+            }
+
+            return res;
+        }
+    }
 
     // Not authenticated or invalid token → redirect to signin
     if (isProtected && !isTokenValid) {
