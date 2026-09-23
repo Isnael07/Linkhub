@@ -4,12 +4,12 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema, SignupFormData } from "@/schemas/signupSchema";
-import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { handleFormError } from "@/lib/formUtils";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function useSignup() {
-  const router = useRouter();
+  const { login } = useAuth();
   const [success, setSuccess] = useState("");
 
   const {
@@ -29,7 +29,8 @@ export function useSignup() {
       });
 
       setSuccess("Conta criada com sucesso!");
-      router.push("/signin");
+
+      await login(data.email, data.password);
     } catch (err: unknown) {
       handleFormError(err, setError);
     }
