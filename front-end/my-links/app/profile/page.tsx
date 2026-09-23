@@ -8,7 +8,7 @@ import { Navbar } from "@/components/Navbar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Loader2, User, Mail, Shield, Trash2 } from "lucide-react";
+import { Loader2, User, Mail, Shield, Trash2, Link2, Copy, Check } from "lucide-react";
 
 export default function ProfilePage() {
     const {isAuthenticated, isLoading: authLoading } = useAuth();
@@ -22,6 +22,9 @@ export default function ProfilePage() {
     const [updateSuccess, setUpdateSuccess] = useState("");
     const [updateError, setUpdateError] = useState("");
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [copied, setCopied] = useState(false);
+
+    const shareUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8080"}/u/${profile?.username ?? ""}`;
 
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
@@ -62,6 +65,16 @@ export default function ProfilePage() {
             );
         } finally {
             setIsUpdating(false);
+        }
+    };
+
+    const handleCopyUrl = async () => {
+        try {
+            await navigator.clipboard.writeText(shareUrl);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch {
+            setUpdateError("Não foi possível copiar o link");
         }
     };
 
@@ -109,6 +122,41 @@ export default function ProfilePage() {
                                 {profile?.email}
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                {/* Share Link Card */}
+                <div
+                    className="mb-8 glass rounded-2xl p-6 animate-slide-up"
+                    style={{ animationDelay: "0.05s" }}
+                >
+                    <div className="mb-4 flex items-center gap-2">
+                        <Link2 className="h-5 w-5 text-violet-400" />
+                        <h2 className="text-lg font-semibold text-white">
+                            Compartilhe seu Perfil
+                        </h2>
+                    </div>
+                    <p className="mb-4 text-sm text-zinc-400">
+                        Envie este link para amigos compartilhar seus links
+                    </p>
+                    <div className="flex items-center gap-2">
+                        <Input
+                            readOnly
+                            value={shareUrl}
+                            onFocus={(e) => e.target.select()}
+                            className="flex-1 border-white/10 bg-zinc-800 text-sm text-zinc-300 focus:border-violet-500"
+                        />
+                        <Button
+                            type="button"
+                            onClick={handleCopyUrl}
+                            className="bg-gradient-to-r from-violet-600 to-cyan-600 text-white hover:from-violet-500 hover:to-cyan-500"
+                        >
+                            {copied ? (
+                                <Check className="h-4 w-4" />
+                            ) : (
+                                <Copy className="h-4 w-4" />
+                            )}
+                        </Button>
                     </div>
                 </div>
 
