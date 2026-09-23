@@ -25,7 +25,7 @@ export default function ProfilePage() {
     const [copied, setCopied] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
-    const shareUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8080"}/u/${profile?.username ?? ""}`;
+    const shareUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/u/${profile?.username ?? ""}`;
 
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
