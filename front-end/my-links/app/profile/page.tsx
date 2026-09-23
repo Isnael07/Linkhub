@@ -8,7 +8,7 @@ import { Navbar } from "@/components/Navbar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Loader2, User, Mail, Shield, Trash2, Link2, Copy, Check } from "lucide-react";
+import { Loader2, User, Mail, Shield, Trash2, Link2, Copy, Check, Eye, EyeOff } from "lucide-react";
 
 export default function ProfilePage() {
     const {isAuthenticated, isLoading: authLoading } = useAuth();
@@ -23,6 +23,7 @@ export default function ProfilePage() {
     const [updateError, setUpdateError] = useState("");
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const shareUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8080"}/u/${profile?.username ?? ""}`;
 
@@ -190,14 +191,29 @@ export default function ProfilePage() {
                                 Nova Senha{" "}
                                 <span className="text-zinc-500">(deixe vazio para manter)</span>
                             </Label>
-                            <Input
-                                id="new-password"
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="••••••••"
-                                className="border-white/10 bg-zinc-800 text-white placeholder:text-zinc-500 focus:border-violet-500"
-                            />
+                            <div className="relative">
+                                <Input
+                                    id="new-password"
+                                    type={showPassword ? "text" : "password"}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                    className="border-white/10 bg-zinc-800 pr-10 text-white placeholder:text-zinc-500 focus:border-violet-500"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword((prev) => !prev)}
+                                    tabIndex={-1}
+                                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-400 transition-colors hover:text-white"
+                                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="h-4 w-4" />
+                                    ) : (
+                                        <Eye className="h-4 w-4" />
+                                    )}
+                                </button>
+                            </div>
                         </div>
 
                         {updateError && (
