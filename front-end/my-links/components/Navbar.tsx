@@ -4,14 +4,18 @@ import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePathname } from "next/navigation";
-import { LogOut, User, LayoutDashboard, Link2 } from "lucide-react";
+import { LogOut, User, LayoutDashboard, Link2, Shield } from "lucide-react";
 
 export function Navbar() {
-    const { user, logout, isAuthenticated } = useAuth();
+    const { user, logout, isAuthenticated, isAdmin } = useAuth();
     const pathname = usePathname();
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
     if (!isAuthenticated) return null;
+
+    const isAdminPage = pathname.startsWith("/admin");
+    const showDashboardLink = !isAdminPage && !isAdmin;
+    const homeHref = isAdmin ? "/admin/usuarios" : "/dashboard";
 
     return (
         <>
@@ -19,7 +23,7 @@ export function Navbar() {
             <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
                 {/* Logo */}
                 <Link
-                    href="/dashboard"
+                    href={homeHref}
                     className="flex items-center gap-2 text-xl font-bold tracking-tight"
                 >
                     <Link2 className="h-6 w-6 text-violet-400" />
@@ -30,16 +34,18 @@ export function Navbar() {
 
                 {/* Navigation */}
                 <div className="flex items-center gap-1">
-                    <Link
-                        href="/dashboard"
-                        className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${pathname === "/dashboard"
-                                ? "bg-white/10 text-white"
-                                : "text-zinc-400 hover:bg-white/5 hover:text-white"
-                            }`}
-                    >
-                        <LayoutDashboard className="h-4 w-4" />
-                        Dashboard
-                    </Link>
+                    {showDashboardLink && (
+                        <Link
+                            href="/dashboard"
+                            className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${pathname === "/dashboard"
+                                    ? "bg-white/10 text-white"
+                                    : "text-zinc-400 hover:bg-white/5 hover:text-white"
+                                }`}
+                        >
+                            <LayoutDashboard className="h-4 w-4" />
+                            Dashboard
+                        </Link>
+                    )}
 
                     <Link
                         href="/profile"
@@ -51,6 +57,19 @@ export function Navbar() {
                         <User className="h-4 w-4" />
                         {user?.username || "Perfil"}
                     </Link>
+
+                    {isAdmin && (
+                        <Link
+                            href="/admin/usuarios"
+                            className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${isAdminPage
+                                    ? "bg-white/10 text-white"
+                                    : "text-zinc-400 hover:bg-white/5 hover:text-white"
+                                }`}
+                        >
+                            <Shield className="h-4 w-4" />
+                            Usuários
+                        </Link>
+                    )}
 
                     <button
                         onClick={() => setShowLogoutConfirm(true)}

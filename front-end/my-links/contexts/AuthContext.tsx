@@ -16,15 +16,17 @@ type User = {
     userId: string;
     username: string | null;
     email: string | null;
+    role?: "ADMIN" | "USER" | null;
 };
 
 type AuthContextType = {
     user: User | null;
     isAuthenticated: boolean;
+    isAdmin: boolean;
     isLoading: boolean;
     login: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
-    refreshUser: () => Promise<boolean>;
+    refreshUser: () => Promise<User | null>;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -36,20 +38,22 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
 
     const refreshUser = useCallback(async () => {
             try {
-                const data = await apiJson<{ authenticated?: boolean; userId?: string; username?: string | null; email?: string | null }>("/auth/me");
+                const data = await apiJson<{ authenticated?: boolean; userId?: string; username?: string | null; email?: string | null; role?: "ADMIN" | "USER" | null }>("/auth/me");
                 if (data?.authenticated) {
-                    setUser({
+                    const authenticatedUser: User = {
                         userId: data.userId as string,
                         username: data.username ?? null,
                         email: data.email ?? null,
-                    });
-                    return true;
+                        role: data.role ?? null,
+                    };
+                    setUser(authenticatedUser);
+                    return authenticatedUser;
                 }
                 setUser(null);
-                return false;
+                return null;
             } catch {
                 setUser(null);
-                return false;
+                return null;
             }
     }, []);
 
@@ -63,12 +67,14 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
             body: JSON.stringify({ email, password }),
         });
 
-        const authenticated = await refreshUser();
-        if (!authenticated) {
+        const authenticatedUser = await refreshUser();
+        if (!authenticatedUser) {
             throw new Error("Falha ao autenticar");
         }
 
-        router.push("/dashboard");
+        router.push(
+            authenticatedUser.role === "ADMIN" ? "/admin/usuarios" : "/dashboard"
+        );
     }, [refreshUser, router]);
 
     const logout = useCallback(async () => {
@@ -83,6 +89,7 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
         () => ({
             user,
             isAuthenticated: !!user,
+            isAdmin: user?.role === "ADMIN",
             isLoading,
             login,
             logout,
