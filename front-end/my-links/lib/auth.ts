@@ -132,3 +132,26 @@ export async function requireOwnership(targetId: string): Promise<AuthResult> {
 
     return auth;
 }
+
+/**
+ * Returns true when the JWT payload contains the ADMIN role claim.
+ */
+export function hasAdminRole(payload: JwtPayload | null): boolean {
+    return Array.isArray(payload?.roles) && payload.roles.includes("ROLE_ADMIN");
+}
+
+/**
+ * Guard that verifies the user is authenticated AND has the ADMIN role.
+ * Returns `{ token, userId }` on success, or `{ error: NextResponse }` on failure (401 or 403).
+ */
+export async function requireAdmin(): Promise<AuthResult> {
+    const auth = await requireAuth();
+    if (auth.error) return auth;
+
+    const payload = await verifyJwt(auth.token);
+    if (!hasAdminRole(payload)) {
+        return { error: NextResponse.json({ message: "Acesso negado" }, { status: 403 }) };
+    }
+
+    return auth;
+}
