@@ -61,7 +61,15 @@ export default function DashboardPage() {
         );
     }
 
-    if (!isAuthenticated) return null;
+    if (!isAuthenticated) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-zinc-950">
+                <p className="text-sm text-zinc-400">
+                    Usuário não autenticado. Redirecionando para login...
+                </p>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-zinc-950">

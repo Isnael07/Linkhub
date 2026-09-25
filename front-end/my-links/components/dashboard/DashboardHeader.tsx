@@ -8,7 +8,7 @@ type DashboardHeaderProps = {
     onNewLink: () => void;
 };
 
-export function DashboardHeader({ username, onNewLink }: DashboardHeaderProps) {
+export function DashboardHeader({ username, onNewLink }: Readonly<DashboardHeaderProps>) {
     return (
         <div className="mb-8 flex items-center justify-between">
             <div>

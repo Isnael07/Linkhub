@@ -64,7 +64,7 @@ public class LinkControllerImp implements LinkController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{username}/user")
+    @GetMapping("/public/{username}")
     @Override
     public ResponseEntity<List<LinksResponseDTO>> findAllLinksByUser(@PathVariable String username){
         List<LinksResponseDTO> links = service.findAllLinksByUsername(username);

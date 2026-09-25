@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { apiFetch, apiJson } from "@/lib/api";
 
 type Profile = {
     id: string;
@@ -21,14 +22,8 @@ export function useProfile() {
         setError(null);
 
         try {
-            const res = await fetch(`/api/user/${user.userId}`, {
-                credentials: "include",
-            });
-
-            if (!res.ok) throw new Error("Erro ao buscar perfil");
-
-            const data = await res.json();
-            setProfile(data);
+            const data = await apiJson<Profile>(`/user/${user.userId}`);
+            setProfile(data || null);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Erro inesperado");
         } finally {
@@ -39,19 +34,10 @@ export function useProfile() {
     const updateProfile = async (data: { username?: string; password?: string }) => {
         if (!user) throw new Error("Não autenticado");
 
-        const res = await fetch(`/api/user/${user.userId}`, {
+        const updated = await apiJson<Profile>(`/user/${user.userId}`, {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
             body: JSON.stringify(data),
         });
-
-        if (!res.ok) {
-            const err = await res.json().catch(() => null);
-            throw new Error(err?.message || "Erro ao atualizar perfil");
-        }
-
-        const updated = await res.json();
         setProfile(updated);
         await refreshUser();
         return updated;
@@ -60,15 +46,9 @@ export function useProfile() {
     const deleteAccount = async () => {
         if (!user) throw new Error("Não autenticado");
 
-        const res = await fetch(`/api/user/${user.userId}`, {
+        await apiFetch(`/user/${user.userId}`, {
             method: "DELETE",
-            credentials: "include",
         });
-
-        if (!res.ok) {
-            const err = await res.json().catch(() => null);
-            throw new Error(err?.message || "Erro ao deletar conta");
-        }
 
         await logout();
     };

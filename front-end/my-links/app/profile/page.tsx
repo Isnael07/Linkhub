@@ -8,20 +8,24 @@ import { Navbar } from "@/components/Navbar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Loader2, User, Mail, Shield, Trash2 } from "lucide-react";
+import { Loader2, User, Mail, Shield, Trash2, Link2, Copy, Check, Eye, EyeOff } from "lucide-react";
 
 export default function ProfilePage() {
-    const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+    const {isAuthenticated, isLoading: authLoading } = useAuth();
     const router = useRouter();
     const { profile, isLoading, fetchProfile, updateProfile, deleteAccount } =
         useProfile();
 
-    const [username, setUsername] = useState("");
+    const [username, setUsername] = useState<string | undefined>(undefined);
     const [password, setPassword] = useState("");
     const [isUpdating, setIsUpdating] = useState(false);
     const [updateSuccess, setUpdateSuccess] = useState("");
     const [updateError, setUpdateError] = useState("");
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+
+    const shareUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/u/${profile?.username ?? ""}`;
 
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
@@ -35,13 +39,7 @@ export default function ProfilePage() {
         }
     }, [isAuthenticated, fetchProfile]);
 
-    useEffect(() => {
-        if (profile) {
-            setUsername(profile.username);
-        }
-    }, [profile]);
-
-    const handleUpdate = async (e: React.FormEvent) => {
+    const handleUpdate = async (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
         e.preventDefault();
         setUpdateSuccess("");
         setUpdateError("");
@@ -49,7 +47,8 @@ export default function ProfilePage() {
 
         try {
             const data: { username?: string; password?: string } = {};
-            if (username !== profile?.username) data.username = username;
+            const effectiveUsername = username ?? profile?.username ?? "";
+            if (effectiveUsername !== profile?.username) data.username = effectiveUsername;
             if (password) data.password = password;
 
             if (Object.keys(data).length === 0) {
@@ -67,6 +66,16 @@ export default function ProfilePage() {
             );
         } finally {
             setIsUpdating(false);
+        }
+    };
+
+    const handleCopyUrl = async () => {
+        try {
+            await navigator.clipboard.writeText(shareUrl);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch {
+            setUpdateError("Não foi possível copiar o link");
         }
     };
 
@@ -117,6 +126,41 @@ export default function ProfilePage() {
                     </div>
                 </div>
 
+                {/* Share Link Card */}
+                <div
+                    className="mb-8 glass rounded-2xl p-6 animate-slide-up"
+                    style={{ animationDelay: "0.05s" }}
+                >
+                    <div className="mb-4 flex items-center gap-2">
+                        <Link2 className="h-5 w-5 text-violet-400" />
+                        <h2 className="text-lg font-semibold text-white">
+                            Compartilhe seu Perfil
+                        </h2>
+                    </div>
+                    <p className="mb-4 text-sm text-zinc-400">
+                        Envie este link para amigos compartilhar seus links
+                    </p>
+                    <div className="flex items-center gap-2">
+                        <Input
+                            readOnly
+                            value={shareUrl}
+                            onFocus={(e) => e.target.select()}
+                            className="flex-1 border-white/10 bg-zinc-800 text-sm text-zinc-300 focus:border-violet-500"
+                        />
+                        <Button
+                            type="button"
+                            onClick={handleCopyUrl}
+                            className="bg-gradient-to-r from-violet-600 to-cyan-600 text-white hover:from-violet-500 hover:to-cyan-500"
+                        >
+                            {copied ? (
+                                <Check className="h-4 w-4" />
+                            ) : (
+                                <Copy className="h-4 w-4" />
+                            )}
+                        </Button>
+                    </div>
+                </div>
+
                 {/* Edit Form */}
                 <div
                     className="mb-8 glass rounded-2xl p-6 animate-slide-up"
@@ -136,7 +180,7 @@ export default function ProfilePage() {
                             </Label>
                             <Input
                                 id="username"
-                                value={username}
+                                value={username ?? profile?.username ?? ""}
                                 onChange={(e) => setUsername(e.target.value)}
                                 className="border-white/10 bg-zinc-800 text-white placeholder:text-zinc-500 focus:border-violet-500"
                             />
@@ -147,14 +191,29 @@ export default function ProfilePage() {
                                 Nova Senha{" "}
                                 <span className="text-zinc-500">(deixe vazio para manter)</span>
                             </Label>
-                            <Input
-                                id="new-password"
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="••••••••"
-                                className="border-white/10 bg-zinc-800 text-white placeholder:text-zinc-500 focus:border-violet-500"
-                            />
+                            <div className="relative">
+                                <Input
+                                    id="new-password"
+                                    type={showPassword ? "text" : "password"}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                    className="border-white/10 bg-zinc-800 pr-10 text-white placeholder:text-zinc-500 focus:border-violet-500"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword((prev) => !prev)}
+                                    tabIndex={-1}
+                                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-400 transition-colors hover:text-white"
+                                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="h-4 w-4" />
+                                    ) : (
+                                        <Eye className="h-4 w-4" />
+                                    )}
+                                </button>
+                            </div>
                         </div>
 
                         {updateError && (
