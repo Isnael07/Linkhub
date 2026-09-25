@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyJwt } from "@/lib/auth";
-import { callBackendRefresh, setTokenCookies } from "@/lib/refresh";
+import { verifyJwt, hasAdminRole } from "@/lib/auth";
+import { callBackendRefresh, setTokenCookies, type RefreshResult } from "@/lib/refresh";
 
 // Routes that require authentication
-const PROTECTED_PATHS = ["/dashboard", "/profile"];
+const PROTECTED_PATHS = ["/dashboard", "/profile", "/admin"];
 
 // Routes only accessible when NOT authenticated
 const AUTH_PAGES = ["/signin", "/signup"];
@@ -16,6 +16,19 @@ const ALLOWED_ORIGINS = new Set([
     "http://localhost:3000",
 ]);
 
+/** Landing page after a successful login, depending on the user's role. */
+function homePath(isAdmin: boolean): string {
+    return isAdmin ? "/admin/usuarios" : "/dashboard";
+}
+
+function matchesAnyPrefix(pathname: string, prefixes: string[]): boolean {
+    return prefixes.some((prefix) => pathname.startsWith(prefix));
+}
+
+/**
+ * Blocks mutating /api requests that don't come from an allowed origin.
+ * Returns a 403 response when the request must be rejected, or null when it can proceed.
+ */
 function verifyCsrf(req: NextRequest): NextResponse | null {
     // Only check unsafe (mutating) methods
     if (!UNSAFE_METHODS.has(req.method)) return null;
@@ -40,63 +53,98 @@ function verifyCsrf(req: NextRequest): NextResponse | null {
     return null;
 }
 
+type Session = {
+    isTokenValid: boolean;
+    isAdmin: boolean;
+    /** New tokens obtained from the refresh flow, when one was performed. */
+    refreshedTokens: RefreshResult | null;
+};
+
+/**
+ * Resolves the current session from the cookies, renewing the access token
+ * when it is missing/expired and a refresh token is available.
+ */
+async function resolveSession(req: NextRequest): Promise<Session> {
+    const accessToken = req.cookies.get("accessToken")?.value;
+    const accessPayload = accessToken ? await verifyJwt(accessToken) : null;
+
+    if (accessPayload) {
+        return {
+            isTokenValid: true,
+            isAdmin: hasAdminRole(accessPayload),
+            refreshedTokens: null,
+        };
+    }
+
+    return renewSession(req.cookies.get("refreshToken")?.value);
+}
+
+/** Exchanges the refresh token for a new pair, returning an empty session on failure. */
+async function renewSession(refreshToken: string | undefined): Promise<Session> {
+    const tokens = refreshToken ? await callBackendRefresh(refreshToken) : null;
+
+    if (!tokens) {
+        return { isTokenValid: false, isAdmin: false, refreshedTokens: null };
+    }
+
+    const payload = await verifyJwt(tokens.accessToken);
+
+    return {
+        isTokenValid: Boolean(payload),
+        isAdmin: hasAdminRole(payload),
+        refreshedTokens: tokens,
+    };
+}
+
+/** Returns the path the user should be sent to, or null when the request can continue. */
+function decideRedirect(
+    isProtected: boolean,
+    isAuthPage: boolean,
+    session: Session
+): string | null {
+    const { isTokenValid, isAdmin } = session;
+
+    // Not authenticated or invalid token → redirect to signin
+    if (isProtected && !isTokenValid) return "/signin";
+
+    // Already authenticated → redirect away from auth pages
+    if (isAuthPage && isTokenValid) return homePath(isAdmin);
+
+    return null;
+}
+
 export async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl;
 
     // --- CSRF protection for API routes ---
     if (pathname.startsWith("/api/")) {
-        const csrfError = verifyCsrf(req);
-        if (csrfError) return csrfError;
-        return NextResponse.next();
+        return verifyCsrf(req) ?? NextResponse.next();
     }
 
     // --- Route protection for pages ---
-    const accessToken = req.cookies.get("accessToken")?.value;
-    const refreshToken = req.cookies.get("refreshToken")?.value;
-    const isProtected = PROTECTED_PATHS.some((p) => pathname.startsWith(p));
-    const isAuthPage = AUTH_PAGES.some((p) => pathname.startsWith(p));
+    const session = await resolveSession(req);
+    const redirectTo = decideRedirect(
+        matchesAnyPrefix(pathname, PROTECTED_PATHS),
+        matchesAnyPrefix(pathname, AUTH_PAGES),
+        session
+    );
 
-    let isTokenValid = accessToken ? Boolean(await verifyJwt(accessToken)) : false;
+    const res = redirectTo
+        ? NextResponse.redirect(new URL(redirectTo, req.url))
+        : NextResponse.next();
 
-    // Access token expired/invalid but a refresh token exists → try to renew
-    if (!isTokenValid && refreshToken) {
-        const tokens = await callBackendRefresh(refreshToken);
-        if (tokens) {
-            const res = NextResponse.next();
-            setTokenCookies(res.cookies, tokens);
-            isTokenValid = Boolean(await verifyJwt(tokens.accessToken));
-
-            if (isProtected && isTokenValid) {
-                return res;
-            }
-
-            if (isAuthPage && isTokenValid) {
-                const redirect = NextResponse.redirect(new URL("/dashboard", req.url));
-                setTokenCookies(redirect.cookies, tokens);
-                return redirect;
-            }
-
-            return res;
-        }
+    if (session.refreshedTokens) {
+        setTokenCookies(res.cookies, session.refreshedTokens);
     }
 
-    // Not authenticated or invalid token → redirect to signin
-    if (isProtected && !isTokenValid) {
-        return NextResponse.redirect(new URL("/signin", req.url));
-    }
-
-    // Already authenticated → redirect away from auth pages
-    if (isAuthPage && isTokenValid) {
-        return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
-
-    return NextResponse.next();
+    return res;
 }
 
 export const config = {
     matcher: [
         "/dashboard/:path*",
         "/profile/:path*",
+        "/admin/:path*",
         "/signin",
         "/signup",
         "/api/:path*",
