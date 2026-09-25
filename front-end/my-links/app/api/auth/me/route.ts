@@ -14,6 +14,9 @@ export async function GET() {
         return NextResponse.json({ authenticated: false }, { status: 401 });
     }
 
+    const roles: string[] = Array.isArray(payload.roles) ? (payload.roles as string[]) : [];
+    const role = roles.includes("ROLE_ADMIN") ? "ADMIN" : "USER";
+
     // Fetch user data from backend
     try {
         const backendRes = await fetch(`${BASE_URL}/user/${payload.sub}`, {
@@ -22,7 +25,7 @@ export async function GET() {
 
         if (!backendRes.ok) {
             return NextResponse.json(
-                { authenticated: true, userId: payload.sub, username: null, email: null }
+                { authenticated: true, userId: payload.sub, username: null, email: null, role }
             );
         }
 
@@ -32,10 +35,11 @@ export async function GET() {
             userId: user.id,
             username: user.username,
             email: user.email,
+            role,
         });
     } catch {
         return NextResponse.json(
-            { authenticated: true, userId: payload.sub, username: null, email: null }
+            { authenticated: true, userId: payload.sub, username: null, email: null, role }
         );
     }
 }
