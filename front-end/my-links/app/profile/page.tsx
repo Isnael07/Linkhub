@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, User, Mail, Shield, Trash2, Link2, Copy, Check, Eye, EyeOff } from "lucide-react";
 
 export default function ProfilePage() {
-    const {isAuthenticated, isLoading: authLoading } = useAuth();
+    const {isAuthenticated, isAdmin, isLoading: authLoading } = useAuth();
     const router = useRouter();
     const { profile, isLoading, fetchProfile, updateProfile, deleteAccount } =
         useProfile();
@@ -30,14 +30,16 @@ export default function ProfilePage() {
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
             router.push("/signin");
+        } else if (!authLoading && isAdmin) {
+            router.replace("/admin/usuarios");
         }
-    }, [authLoading, isAuthenticated, router]);
+    }, [authLoading, isAuthenticated, isAdmin, router]);
 
     useEffect(() => {
-        if (isAuthenticated) {
+        if (isAuthenticated && !isAdmin) {
             fetchProfile();
         }
-    }, [isAuthenticated, fetchProfile]);
+    }, [isAuthenticated, isAdmin, fetchProfile]);
 
     const handleUpdate = async (e: React.SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
         e.preventDefault();

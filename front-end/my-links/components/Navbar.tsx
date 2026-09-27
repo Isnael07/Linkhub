@@ -14,7 +14,7 @@ export function Navbar() {
     if (!isAuthenticated) return null;
 
     const isAdminPage = pathname.startsWith("/admin");
-    const showDashboardLink = !isAdminPage && !isAdmin;
+    const showUserLinks = !isAdmin && !isAdminPage;
     const homeHref = isAdmin ? "/admin/usuarios" : "/dashboard";
 
     return (
@@ -34,7 +34,7 @@ export function Navbar() {
 
                 {/* Navigation */}
                 <div className="flex items-center gap-1">
-                    {showDashboardLink && (
+                    {showUserLinks && (
                         <Link
                             href="/dashboard"
                             className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${pathname === "/dashboard"
@@ -47,16 +47,18 @@ export function Navbar() {
                         </Link>
                     )}
 
-                    <Link
-                        href="/profile"
-                        className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${pathname === "/profile"
-                                ? "bg-white/10 text-white"
-                                : "text-zinc-400 hover:bg-white/5 hover:text-white"
-                            }`}
-                    >
-                        <User className="h-4 w-4" />
-                        {user?.username || "Perfil"}
-                    </Link>
+                    {showUserLinks && (
+                        <Link
+                            href="/profile"
+                            className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${pathname === "/profile"
+                                    ? "bg-white/10 text-white"
+                                    : "text-zinc-400 hover:bg-white/5 hover:text-white"
+                                }`}
+                        >
+                            <User className="h-4 w-4" />
+                            {user?.username || "Perfil"}
+                        </Link>
+                    )}
 
                     {isAdmin && (
                         <Link

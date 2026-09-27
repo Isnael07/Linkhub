@@ -8,6 +8,9 @@ const PROTECTED_PATHS = ["/dashboard", "/profile", "/admin"];
 // Routes only accessible when NOT authenticated
 const AUTH_PAGES = ["/signin", "/signup"];
 
+// Routes restricted to non-admin users (admins only manage users)
+const USER_ONLY_PATHS = ["/dashboard", "/profile"];
+
 // HTTP methods that mutate data and require CSRF protection
 const UNSAFE_METHODS = new Set(["POST", "PATCH", "PUT", "DELETE"]);
 
@@ -100,6 +103,7 @@ async function renewSession(refreshToken: string | undefined): Promise<Session> 
 function decideRedirect(
     isProtected: boolean,
     isAuthPage: boolean,
+    isUserOnlyPath: boolean,
     session: Session
 ): string | null {
     const { isTokenValid, isAdmin } = session;
@@ -109,6 +113,9 @@ function decideRedirect(
 
     // Already authenticated → redirect away from auth pages
     if (isAuthPage && isTokenValid) return homePath(isAdmin);
+
+    // Admins have no dashboard/profile → redirect to the admin area
+    if (isUserOnlyPath && isTokenValid && isAdmin) return homePath(true);
 
     return null;
 }
@@ -126,6 +133,7 @@ export async function middleware(req: NextRequest) {
     const redirectTo = decideRedirect(
         matchesAnyPrefix(pathname, PROTECTED_PATHS),
         matchesAnyPrefix(pathname, AUTH_PAGES),
+        matchesAnyPrefix(pathname, USER_ONLY_PATHS),
         session
     );
 

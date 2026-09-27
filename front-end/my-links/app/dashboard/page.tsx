@@ -15,7 +15,7 @@ import {
 import { Loader2 } from "lucide-react";
 
 export default function DashboardPage() {
-    const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+    const { user, isAuthenticated, isAdmin, isLoading: authLoading } = useAuth();
     const router = useRouter();
     const { links, isLoading, fetchLinks, updateLink, deleteLink } = useLinks();
 
@@ -30,14 +30,16 @@ export default function DashboardPage() {
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
             router.push("/signin");
+        } else if (!authLoading && isAdmin) {
+            router.replace("/admin/usuarios");
         }
-    }, [authLoading, isAuthenticated, router]);
+    }, [authLoading, isAuthenticated, isAdmin, router]);
 
     useEffect(() => {
-        if (isAuthenticated) {
+        if (isAuthenticated && !isAdmin) {
             fetchLinks();
         }
-    }, [isAuthenticated, fetchLinks]);
+    }, [isAuthenticated, isAdmin, fetchLinks]);
 
     const handleDelete = async () => {
         if (!deleteConfirm) return;
