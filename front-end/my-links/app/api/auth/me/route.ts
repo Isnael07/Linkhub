@@ -1,29 +1,21 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { BASE_URL } from "@/lib/api";
-
-function decodeJwtPayload(token: string) {
-    try {
-        const base64 = token.split(".")[1];
-        const json = Buffer.from(base64, "base64").toString("utf-8");
-        return JSON.parse(json);
-    } catch {
-        return null;
-    }
-}
+import { getValidAccessToken, verifyJwt } from "@/lib/auth";
 
 export async function GET() {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get("accessToken")?.value;
+    const accessToken = await getValidAccessToken();
 
     if (!accessToken) {
         return NextResponse.json({ authenticated: false }, { status: 401 });
     }
 
-    const payload = decodeJwtPayload(accessToken);
-    if (!payload || !payload.sub) {
+    const payload = await verifyJwt(accessToken);
+    if (!payload?.sub) {
         return NextResponse.json({ authenticated: false }, { status: 401 });
     }
+
+    const roles: string[] = Array.isArray(payload.roles) ? (payload.roles as string[]) : [];
+    const role = roles.includes("ROLE_ADMIN") ? "ADMIN" : "USER";
 
     // Fetch user data from backend
     try {
@@ -33,7 +25,7 @@ export async function GET() {
 
         if (!backendRes.ok) {
             return NextResponse.json(
-                { authenticated: true, userId: payload.sub, username: null, email: null }
+                { authenticated: true, userId: payload.sub, username: null, email: null, role }
             );
         }
 
@@ -43,10 +35,11 @@ export async function GET() {
             userId: user.id,
             username: user.username,
             email: user.email,
+            role,
         });
     } catch {
         return NextResponse.json(
-            { authenticated: true, userId: payload.sub, username: null, email: null }
+            { authenticated: true, userId: payload.sub, username: null, email: null, role }
         );
     }
 }

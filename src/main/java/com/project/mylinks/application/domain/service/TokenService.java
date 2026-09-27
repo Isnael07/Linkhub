@@ -33,6 +33,7 @@ public class TokenService {
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("links-hub-v0")
                 .subject(user.getId().toString())
+                .audience(List.of("links-hub-v0"))
                 .claim("roles", List.of("ROLE_" + user.getRole().name()))
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(expiresIn))

@@ -20,7 +20,7 @@ export function EditLinkModal({
     initialUrl,
     onSave,
     onClose,
-}: EditLinkModalProps) {
+}: Readonly<EditLinkModalProps>) {
     const [nameUrl, setNameUrl] = useState(initialNameUrl);
     const [url, setUrl] = useState(initialUrl);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,6 +46,7 @@ export function EditLinkModal({
             <div className="relative w-full max-w-md rounded-2xl border border-white/10 bg-zinc-900 p-6 shadow-2xl">
                 {/* Close button */}
                 <button
+                    type="button"
                     onClick={onClose}
                     className="absolute right-4 top-4 rounded-lg p-1 text-zinc-400 transition-colors hover:bg-white/10 hover:text-white"
                 >

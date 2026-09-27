@@ -183,7 +183,7 @@ class LinksControllerImpTests {
 
        when(service.findAllLinksByUsername(username)).thenReturn(response);
 
-       mockMvc.perform(get("/links/{username}/user", username)
+       mockMvc.perform(get("/links/public/{username}", username)
                        .contentType(MediaType.APPLICATION_JSON))
 
                .andExpect(status().isOk())

@@ -34,7 +34,6 @@ public class LinksService {
         this.userRepository = userRepository;
     }
 
-    @CacheEvict(cacheNames = "user_links", key = "#dto.userId()")
     public LinksResponseDTO create(CreateLinksDTO dto) {
         User user = userRepository.findById(dto.userId())
                 .orElseThrow(UserNotFoundException::new);

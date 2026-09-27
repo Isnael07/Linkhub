@@ -10,7 +10,7 @@ type CreateLinkFormProps = {
     onCancel: () => void;
 };
 
-export function CreateLinkForm({ onSuccess, onCancel }: CreateLinkFormProps) {
+export function CreateLinkForm({ onSuccess, onCancel }: Readonly<CreateLinkFormProps>) {
     const {
         register,
         handleSubmit,

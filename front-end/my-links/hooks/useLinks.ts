@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { apiFetch, apiJson } from "@/lib/api";
 
 export type Link = {
     id: string;
@@ -17,18 +18,18 @@ export function useLinks() {
 
     const fetchLinks = useCallback(async () => {
         if (!user) return;
+        if (!user.username) {
+            setIsLoading(false);
+            setError("Nome de usuário ausente para buscar links.");
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
 
         try {
-            const res = await fetch(`/api/links?userId=${user.userId}`, {
-                credentials: "include",
-            });
-
-            if (!res.ok) throw new Error("Erro ao buscar links");
-
-            const data = await res.json();
-            setLinks(data);
+            const data = await apiJson<Link[]>(`/links/public/${user.username}`);
+            setLinks(data || []);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Erro inesperado");
         } finally {
@@ -37,33 +38,18 @@ export function useLinks() {
     }, [user]);
 
     const updateLink = async (id: string, data: { nameUrl?: string; url?: string }) => {
-        const res = await fetch(`/api/links/${id}`, {
+        const updated = await apiJson<Link>(`/links/${id}`, {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
             body: JSON.stringify(data),
         });
-
-        if (!res.ok) {
-            const err = await res.json().catch(() => null);
-            throw new Error(err?.message || "Erro ao atualizar link");
-        }
-
-        const updated = await res.json();
         setLinks((prev) => prev.map((l) => (l.id === id ? updated : l)));
         return updated;
     };
 
     const deleteLink = async (id: string) => {
-        const res = await fetch(`/api/links/${id}`, {
+        await apiFetch(`/links/${id}`, {
             method: "DELETE",
-            credentials: "include",
         });
-
-        if (!res.ok) {
-            const err = await res.json().catch(() => null);
-            throw new Error(err?.message || "Erro ao deletar link");
-        }
 
         setLinks((prev) => prev.filter((l) => l.id !== id));
     };

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { SignupForm } from "@/components/signupForma";
+import { SignupForm } from "@/components/SignupForm";
 import { Link2 } from "lucide-react";
 
 export default function SignupPage() {

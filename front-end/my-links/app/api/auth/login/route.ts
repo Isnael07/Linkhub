@@ -13,7 +13,6 @@ export async function POST(req: NextRequest) {
         });
 
         if (!backendRes.ok) {
-            const errBody = await backendRes.text();
             return NextResponse.json(
                 { message: "Credenciais inválidas" },
                 { status: backendRes.status }

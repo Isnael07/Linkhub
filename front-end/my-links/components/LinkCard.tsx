@@ -32,7 +32,7 @@ export function LinkCard({ id, nameUrl, url, onEdit, onDelete }: LinkCardProps) 
                     </a>
                 </div>
 
-                <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                <div className="flex items-center gap-1 opacity-60 transition-opacity group-hover:opacity-100">
                     <button
                         onClick={() => onEdit(id)}
                         className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-white/10 hover:text-cyan-400"
