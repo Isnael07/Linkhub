@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,7 +31,7 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private List<Links> links;
+    private List<Links> links =  new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(name = "cargo", nullable = false)
@@ -39,6 +40,8 @@ public class User {
     private String refreshToken;
 
     private Instant createdTokenAt;
+
+    private String avatarUrl;
 
 
     public void rotateRefreshTokenIfNeeded(RefreshTokenPolicy policy,
