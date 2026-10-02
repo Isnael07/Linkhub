@@ -65,4 +65,14 @@ public class UserService {
         repository.save(user);
         return toResponse(user);
     }
+
+    public UserResponseDTO updateAvatar(UUID userId , String avatarPath){
+        var user = repository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+
+        user.setAvatarUrl(avatarPath);
+        repository.save(user);
+
+        return toResponse(user);
+    }
 }
