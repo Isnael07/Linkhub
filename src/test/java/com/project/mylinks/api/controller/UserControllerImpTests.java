@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.mylinks.api.dto.userDTO.CreateUserDTO;
 import com.project.mylinks.api.dto.userDTO.UserResponseDTO;
 import com.project.mylinks.api.dto.userDTO.UserUpdateDTO;
+import com.project.mylinks.application.service.BucketService;
 import com.project.mylinks.application.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -15,7 +16,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import org.springframework.http.MediaType;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -37,6 +37,9 @@ class UserControllerImpTests {
 
     @MockitoBean
     private UserService service;
+
+    @MockitoBean
+    BucketService bucketService;
 
     @Test
     void shouldCreateUser() throws Exception {
