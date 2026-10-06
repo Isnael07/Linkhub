@@ -16,7 +16,7 @@ public class BucketConfig {
         return RestClient.builder()
                 .baseUrl(bucketUrl)
                 .defaultHeader("apikey", serviceRoleKey)
-                .defaultHeader("Authorization", "Bear " + serviceRoleKey)
+                .defaultHeader("Authorization", "Bearer " + serviceRoleKey)
                 .build();
 
     }
