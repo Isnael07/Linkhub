@@ -25,6 +25,11 @@ spring:
 jwt:
   secret: ${JWT_SECRET}
 
+bucket:
+  url: ${BUCKET_URL}
+  service-role-key: ${BUCKET_SERVICE_ROLE_KEY}
+
+
 springdoc:
   swagger-ui:
     path: /swagger
