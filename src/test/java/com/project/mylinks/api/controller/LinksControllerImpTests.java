@@ -17,7 +17,6 @@ import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.client.RestClient;
 
 import java.util.Arrays;
 import java.util.List;
@@ -42,9 +41,6 @@ class LinksControllerImpTests {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @MockitoBean
-    RestClient bucketRestClient;
 
 
     @Test
