@@ -1,7 +1,6 @@
 package com.project.mylinks.application.service;
 
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -9,18 +8,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class BucketService {
 
     private static final String BUCKET = "avatars";
     private static final String UPSERT_HEADER = "x-upsert";
     private static final int MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-    private final RestClient supabaseRestClient;
+    private final RestClient restClient;
+
+    public BucketService(RestClient restClient) {
+        this.restClient = restClient;
+    }
 
     public String uploadAvatar(UUID userId, MultipartFile file) throws IOException {
 
@@ -48,7 +53,7 @@ public class BucketService {
         return path;
     }
 
-    private MediaType validateFile(MultipartFile file) {
+    private MediaType validateFile(MultipartFile file) throws IOException {
 
         if (file.isEmpty()) {
             throw new IllegalArgumentException("Arquivo vazio");
@@ -74,6 +79,13 @@ public class BucketService {
             throw new IllegalArgumentException(
                     "Formato de imagem não suportado"
             );
+        }
+
+        try(InputStream inputStream = file.getInputStream()) {
+            BufferedImage image = ImageIO.read(inputStream);
+
+            if (image == null)
+                throw new IllegalArgumentException("O arquivo não contém uma imagem válida");
         }
 
         return mediaType;
@@ -109,7 +121,7 @@ public class BucketService {
             boolean upsert
     ) {
 
-        supabaseRestClient
+        restClient
                 .post()
                 .uri(
                         "/storage/v1/object/{bucket}/{path}",
