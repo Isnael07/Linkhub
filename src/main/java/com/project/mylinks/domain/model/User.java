@@ -31,6 +31,7 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
+    @Builder.Default
     private List<Links> links =  new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
