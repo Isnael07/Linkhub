@@ -5,6 +5,7 @@ import com.project.mylinks.api.dto.userDTO.CreateUserDTO;
 import com.project.mylinks.api.dto.userDTO.UserResponseDTO;
 import com.project.mylinks.domain.model.User;
 import com.project.mylinks.domain.model.UserRole;
+import lombok.NonNull;
 
 
 import java.util.List;
@@ -14,8 +15,7 @@ public class UserMapper {
     private UserMapper() {
     }
 
-    public static User toEntity(CreateUserDTO dto) {
-        if (dto == null) return null;
+    public static User toEntity(@NonNull CreateUserDTO dto) {
 
         return User.builder()
                 .username(dto.username())
@@ -25,21 +25,19 @@ public class UserMapper {
                 .build();
     }
 
-    public static UserResponseDTO toResponse(User user) {
-        if (user == null) return null;
+    public static UserResponseDTO toResponse(@NonNull User user) {
 
-        List<LinksResponseDTO> linksDTOs = null;
-        if (user.getLinks() != null) {
-            linksDTOs = user.getLinks().stream()
-                    .map(LinksMapper::toResponse)
-                    .toList();
-        }
+        List<LinksResponseDTO> linksDTOs = user.getLinks()
+                .stream()
+                .map(LinksMapper::toResponse)
+                .toList();
 
         return new UserResponseDTO(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                linksDTOs
+                linksDTOs,
+                user.getAvatarUrl()
         );
     }
 

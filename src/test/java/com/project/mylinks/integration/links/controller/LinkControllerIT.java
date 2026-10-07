@@ -15,8 +15,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.web.client.RestClient;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -40,6 +42,9 @@ class LinkControllerIT {
     @Autowired
     private UserRepositoryJpa userRepository;
 
+    @MockitoBean
+    RestClient bucketRestClient;
+
     private UUID userId;
 
     @BeforeEach
@@ -48,6 +53,7 @@ class LinkControllerIT {
         userRepository.deleteAll();
         User user = new User();
         user.setEmail("user@email.com");
+        user.setUsername("testUser");
         user.setPassword("123456");
         user.setRole(UserRole.USER);
         userRepository.save(user);

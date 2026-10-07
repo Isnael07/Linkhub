@@ -14,7 +14,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.RestClient;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -34,6 +36,9 @@ class AuthControllerTests {
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
+
+    @MockitoBean
+    RestClient bucketRestClient;
 
     private String asJson(Object obj) throws Exception {
         return new ObjectMapper().writeValueAsString(obj);

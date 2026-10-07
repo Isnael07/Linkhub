@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.mylinks.api.dto.userDTO.CreateUserDTO;
 import com.project.mylinks.api.dto.userDTO.UserResponseDTO;
 import com.project.mylinks.api.dto.userDTO.UserUpdateDTO;
+import com.project.mylinks.application.service.BucketService;
 import com.project.mylinks.application.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -15,7 +16,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import org.springframework.http.MediaType;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -38,6 +38,9 @@ class UserControllerImpTests {
     @MockitoBean
     private UserService service;
 
+    @MockitoBean
+    BucketService bucketService;
+
     @Test
     void shouldCreateUser() throws Exception {
         CreateUserDTO create = new CreateUserDTO(
@@ -50,7 +53,8 @@ class UserControllerImpTests {
                 UUID.randomUUID(),
                 create.username(),
                 create.email(),
-                List.of()
+                List.of(),
+                "teste"
         );
 
         Mockito.when(service.create(Mockito.any(CreateUserDTO.class)))
@@ -72,7 +76,8 @@ class UserControllerImpTests {
                 UUID.randomUUID(),
                 "userTest",
                 "userteste@gmail.com",
-                List.of()
+                List.of(),
+                "teste"
 
         );
 
@@ -101,13 +106,15 @@ class UserControllerImpTests {
                 UUID.randomUUID(),
                 "test",
                 "test@gmail.com",
-                List.of()
+                List.of(),
+                "teste"
         );
         UserResponseDTO dto2 = new UserResponseDTO(
                 UUID.randomUUID(),
                 "test2",
                 "test2@gmail.com",
-                List.of()
+                List.of(),
+                "teste2"
         );
 
         List<UserResponseDTO> dtos = Arrays.asList(dto,dto2);
@@ -147,7 +154,8 @@ class UserControllerImpTests {
                 id,
                 update.username(),
                 "test@gamil.com",
-                List.of()
+                List.of(),
+                "teste"
         );
 
         when(service.update(id,update)).thenReturn(response);
