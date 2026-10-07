@@ -20,5 +20,3 @@ jobs:
         run: mvn clean test "-Dspring.profiles.active=test"
     env:
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
-      BUCKET_URL: ${{ secrets.BUCKET_URL }}
-      BUCKET_SERVICE_ROLE_KEY: ${{ secrets.BUCKET_SERVICE_ROLE_KEY }}
