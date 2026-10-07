@@ -53,7 +53,8 @@ class UserControllerImpTests {
                 UUID.randomUUID(),
                 create.username(),
                 create.email(),
-                List.of()
+                List.of(),
+                "teste"
         );
 
         Mockito.when(service.create(Mockito.any(CreateUserDTO.class)))
@@ -75,7 +76,8 @@ class UserControllerImpTests {
                 UUID.randomUUID(),
                 "userTest",
                 "userteste@gmail.com",
-                List.of()
+                List.of(),
+                "teste"
 
         );
 
@@ -104,13 +106,15 @@ class UserControllerImpTests {
                 UUID.randomUUID(),
                 "test",
                 "test@gmail.com",
-                List.of()
+                List.of(),
+                "teste"
         );
         UserResponseDTO dto2 = new UserResponseDTO(
                 UUID.randomUUID(),
                 "test2",
                 "test2@gmail.com",
-                List.of()
+                List.of(),
+                "teste2"
         );
 
         List<UserResponseDTO> dtos = Arrays.asList(dto,dto2);
@@ -150,7 +154,8 @@ class UserControllerImpTests {
                 id,
                 update.username(),
                 "test@gamil.com",
-                List.of()
+                List.of(),
+                "teste"
         );
 
         when(service.update(id,update)).thenReturn(response);
